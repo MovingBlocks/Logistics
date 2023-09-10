@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+#    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    # If you encounter a redirect loop or are getting a 307 response code
+    # then you need to force the nginx ingress to connect to the backend using HTTPS.
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  ingressClassName: "nginx"
+  rules:
+  - host: argocd.terasology.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name:  terargo-argocd-server
+            port:
+              name: https
+  tls:
+  - hosts:
+    - argocd.terasology.io
+    secretName: argocd-secret # do not change, this is provided by Argo CD

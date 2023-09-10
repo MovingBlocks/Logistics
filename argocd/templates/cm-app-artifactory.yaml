@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-app-artifactory
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+data:
+  cm-app-artifactory.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: Application
+    metadata:
+      name: terartifactory-artifactory
+      namespace: argocd
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/MovingBlocks/Logistics.git'
+        path: artifactory
+        targetRevision: HEAD
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: artifactory
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

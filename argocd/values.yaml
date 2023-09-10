@@ -1,0 +1,21 @@
+argo-cd:
+  notifications:
+    enabled: false
+
+  configs:
+    cm:
+      dex:
+        sso:
+          enabled: true
+          method: dex
+          name: Dex
+        config: |
+          connectors:
+            - type: github
+              id: github
+              name: GitHub
+              config:
+                clientID: 852626461c3a70ed2070
+                clientSecret: ${{ .Values.my-github-oauth-secret.data.github-oath-client-secret }}
+                orgs:
+                - name: CervTest

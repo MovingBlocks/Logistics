@@ -1,0 +1,25 @@
+jenkins:
+  controller:
+    JCasC:
+      configScripts:
+        general: |
+          jenkins:
+            systemMessage: Welcome to the 2020ies via JCasC! Now with 20% more JCasC.
+            securityRealm:
+              github:
+                githubWebUri: "https://github.com"
+                githubApiUri: "https://api.github.com"
+                clientID: "${GITHUB_CLIENT_ID}"
+                clientSecret: "${GITHUB_CLIENT_SECRET}"
+                oauthScopes: "read:user,user:email"
+            authorizationStrategy:
+              github:
+                adminUserNames: "Cervator, immortius, skaldarnar, Josharias, msteiger, qwc, rzats, nihal111, oniatus, jellysnake, pollend, majordwarf, Qwertygiy, Avalancs, casals, DarkWeird, SimonC4, NicholasBatesNZ, jdrueckert, e-aakash, keturn, BenjaminAmos, me0wster"
+                allowAnonymousJobStatusPermission: true
+                allowAnonymousReadPermission: true
+                allowCcTrayPermission: false
+                allowGithubWebHookPermission: true
+                authenticatedUserCreateJobPermission: false
+                authenticatedUserReadPermission: true
+                useRepositoryPermissions: false
+                organizationNames: "CervTest"

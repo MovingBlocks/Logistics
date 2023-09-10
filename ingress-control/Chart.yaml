@@ -1,0 +1,12 @@
+apiVersion: v2
+name: teragress
+version: 1.0.0
+
+# Note that while this aims to set up both inginx and certs a step is first needed to wait for the controller IP and updating the desired domain for management
+dependencies:
+  - name: ingress-nginx
+    version: 4.7.0
+    repository: https://kubernetes.github.io/ingress-nginx
+  - name: cert-manager
+    version: v1.12.0
+    repository: https://charts.jetstack.io

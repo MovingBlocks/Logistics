@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apply-certmanager-issuer-job
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded
+    helm.sh/resource-policy: keep
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      containers:
+        - name: kubectl
+          image: bitnami/kubectl
+          volumeMounts:
+          - name: config-volume1
+            mountPath: /opt/staging/certmanager-issuer-staging.yaml
+            subPath: certmanager-issuer-staging.yaml
+          - name: config-volume2
+            mountPath: /opt/prod/certmanager-issuer-prod.yaml
+            subPath: certmanager-issuer-prod.yaml
+          command:
+            - kubectl
+          args:
+            - apply
+            - -f
+            - /opt/staging/certmanager-issuer-staging.yaml
+            - -f
+            - /opt/prod/certmanager-issuer-prod.yaml
+      restartPolicy: Never
+      volumes:
+      - name: config-volume1
+        configMap:
+          name: cm-certmanager-issuer-staging
+      - name: config-volume2
+        configMap:
+          name: cm-certmanager-issuer-prod

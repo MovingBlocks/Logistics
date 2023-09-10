@@ -1,0 +1,8 @@
+apiVersion: v2
+name: terartifactory
+version: 1.0.0
+
+dependencies:
+  - name: artifactory-oss
+    version: 107.55.14 # App version 7.55.14 when this was chosen
+    repository: https://charts.jfrog.io

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-certmanager-issuer-staging
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+data:
+  certmanager-issuer-staging.yaml: |
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: letsencrypt-staging
+    spec:
+      acme:
+        # The ACME server URL
+        server: https://acme-staging-v02.api.letsencrypt.org/directory
+        # Email address used for ACME registration
+        email: terasology@gmail.com
+        # Name of a secret used to store the ACME account private key
+        privateKeySecretRef:
+          name: letsencrypt-staging
+        # Enable the HTTP-01 challenge provider
+        solvers:
+        - http01:
+            ingress:
+              class: nginx

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: terajenkins
+version: 1.0.0
+
+dependencies:
+  - name: jenkins
+    version: 4.3.24 # App version 2.401.1 when this was chosen
+    repository: https://charts.jenkins.io

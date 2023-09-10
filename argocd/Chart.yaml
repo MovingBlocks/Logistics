@@ -1,0 +1,8 @@
+apiVersion: v2
+name: terargo
+version: 1.0.0
+
+dependencies:
+- name: argo-cd
+  version: 5.34.6
+  repository: https://argoproj.github.io/argo-helm

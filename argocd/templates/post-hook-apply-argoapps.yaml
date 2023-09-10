@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apply-argoapps-job
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded
+    helm.sh/resource-policy: keep
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      containers:
+        - name: kubectl
+          image: bitnami/kubectl
+          volumeMounts:
+          - name: config-volume1
+            mountPath: /opt/cm-app-argocd.yaml
+            subPath: cm-app-argocd.yaml
+          - name: config-volume2
+            mountPath: /opt/cm-app-artifactory.yaml
+            subPath: cm-app-artifactory.yaml
+          - name: config-volume3
+            mountPath: /opt/cm-app-ingress-control.yaml
+            subPath: cm-app-ingress-control.yaml
+          - name: config-volume4
+            mountPath: /opt/cm-app-jenkins.yaml
+            subPath: cm-app-jenkins.yaml
+          command:
+            - kubectl
+          args:
+            - apply
+            - -f
+            - /opt/cm-app-argocd.yaml
+            - -f
+            - /opt/cm-app-artifactory.yaml
+            - -f
+            - /opt/cm-app-ingress-control.yaml
+            - -f
+            - /opt/cm-app-jenkins.yaml
+      restartPolicy: Never
+      volumes:
+      - name: config-volume1
+        configMap:
+          name: cm-app-argocd
+      - name: config-volume2
+        configMap:
+          name: cm-app-artifactory
+      - name: config-volume3
+        configMap:
+          name: cm-app-ingress-control
+      - name: config-volume4
+        configMap:
+          name: cm-app-jenkins

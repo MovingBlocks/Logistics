@@ -1,0 +1,17 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ssd
+  labels:
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-5"
+    helm.sh/resource-policy: keep
+provisioner: kubernetes.io/gce-pd
+allowVolumeExpansion: true
+parameters:
+  type: pd-ssd

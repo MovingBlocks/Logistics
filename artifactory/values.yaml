@@ -1,0 +1,46 @@
+artifactory-oss: # This is needed because we end up parenting the "artifactory-oss" chart in our Chart.yaml
+    artifactory: # Which in turn parents the "artifactory" chart
+      artifactory: # Which in turn has an "artifactory" section. Yay.
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "200m"
+          limits:
+            memory: "6Gi"
+            cpu: "1"
+        javaOpts:
+          xms: "4g"
+          xmx: "4g"
+        persistence:
+          size: 100Gi # Main filestore goes here, default was only 20 Gi
+      postgresql:
+        persistence:
+          size: 20Gi # Default was a bizzare 200 Gi
+      nginx:
+        enabled: false
+      ingress:
+        enabled: true
+        defaultBackend:
+          enabled: false
+        hosts:
+          - artifactory.terasology.io
+        routerPath: /
+        artifactoryPath: /
+        className: ""
+        annotations:
+          kubernetes.io/ingress.class: "nginx"
+          #cert-manager.io/cluster-issuer: letsencrypt-staging
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          kubernetes.io/tls-acme: "true"
+          nginx.ingress.kubernetes.io/proxy-body-size: "0"
+          nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+          nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+          nginx.ingress.kubernetes.io/proxy-body-size: "0"
+          nginx.ingress.kubernetes.io/rewrite-target: "/"
+          nginx.ingress.kubernetes.io/configuration-snippet: |
+            rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+            rewrite ^/(v2)/([^\/]*)/(.*) /artifactory/api/docker/$2/$1/$3;
+        tls:
+        - secretName: artifactory-tls-secret
+          hosts:
+            - artifactory.terasology.io
