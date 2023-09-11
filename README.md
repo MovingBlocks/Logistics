@@ -28,11 +28,11 @@ Initial setup from scratch takes starting locally with `kubectl` and `helm` alth
 
 See the individual directories for more technical details on each topic - this part covers the very beginning which starts with Argo CD. Over time secrets management might mature further and change these steps, so do have a look around for any other secrets-looking things first.
 
-1. Prepare the Jenkins OAuth secret - this could be done more automated but was bypassed during main migration due to expediency. For the moment we hook up and apply a secret to Kubernetes from a local file (so naturally do _not_ recommit the file that says to not recommit it after putting secrets in there)
+1. Prepare the Jenkins OAuth secret - this could be done more automated but was bypassed during main migration due to expediency. For the moment we hook up and apply a secret to Kubernetes from a local file (so naturally do _not_ recommit the file that says to not recommit it after putting secrets in there). This _could_ be done after Argo, but before running a sync on Jenkins.
   *  Go to https://github.com/organizations/MovingBlocks/settings/applications/132034 and make sure you have the client id and the secret (make a new one if needed).
   *  Base64 encode them like noted in `jenkins-secret-do-not-recommit.yaml` and enter the values there.
   *  Create the `jenkins` namespace early (Argo is otherwise configured to make it if needed): `kubectl create ns jenkins`
-  *  Apply the secret: `kubectl apply jenkins-secret-do-not-recommit.yaml -n jenkins`
+  *  Apply the secret: `kubectl apply -f jenkins-secret-do-not-recommit.yaml -n jenkins`
 1. Kick off the process with `helm install terargo-argocd . -f values.yaml --namespace argocd --create-namespace` in the "argocd" directory (cd there with a terminal or use something like monokle.io's IDE)
 1. Stuff should spin up in a few minutes, both Argo CD and an initial application "ingress-control" that sets up an ingress controller (and more - there may be a several minute pause between Argo appearing and it acting on ingress stuff) - get its IP and apply that to the domain (likely hosted on namecheap.com for Terasology stuff)
   * You may have to wait a bit here depending on the mood of DNS replication and/or try in a new browser or incognito mode, maybe after running something like `ipconfig /flushdns`
