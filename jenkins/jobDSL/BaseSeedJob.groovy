@@ -7,13 +7,7 @@ folder("DestinationSol") {
 }
 
 folder("Nanoware") {
-    description("This is a test folder / org for experimenting on our infrastructure like Jenkins itself. It has special props set on the Folder that apply to all jobs under it.")
-    properties {
-        envVarsFolderProperty {
-            // These redirect Nanoware jobs to its variant repos in Artifactory, if the build scripts go looking for these vars anyway. TODO: Switch to .io and fix https://github.com/MovingBlocks/Logistics/issues/7
-            properties("PUBLISH_ORG=nanoware\nRESOLUTION_REPO=http://artifactory.terasology.org/artifactory/virtual-nanoware-and-remote")
-        }
-    }
+    description("This is a test folder / org for experimenting on our infrastructure like Jenkins itself. It needs special props set on the Folder that apply to all jobs under it.")
 }
 
 folder("Libraries") {
@@ -42,7 +36,7 @@ folderList.each { folderName ->
         scm {
             git {
                 remote {
-                    url("https://github.com/MovingBlocks/InfraPlayground.git")
+                    url("https://github.com/MovingBlocks/Logistics.git")
                     credentials("github-app-terasology-jenkins-io")
                 }
                 branch("master")

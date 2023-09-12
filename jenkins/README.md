@@ -17,9 +17,9 @@ Create a new OAuth application in a place like https://github.com/organizations/
 * Make sure the Authorization callback URL is something like https://jenkins.terasology.io/securityRealm/finishLogin
 * Description can be anything, like "Jenkins for The Terasology Foundation"
 
-For the sake of local development ease you can use `jenkins-secret-do-not-recomment.yaml` to prepare the secrets for Kubernetes, just enter the right values as instructed by comments and run `kubectl apply -f jenkins-secret-do-not-recommit.yaml -n jenkins` - you may need to create the namespace first. HOWEVER you do of course not want to commit the actual values, and for on-going maintenance we probably want the secret to not be maintained as part of the chart, at least until using a proper external secrets manager like Vault. For regular operations consider changing the hook resource file to a standard k8s secret, apply it manually, then let Argo handle everything else with the assumption that the secret is available.
+For the sake of local development ease you can use `jenkins-secret-do-not-recomment.yaml` to prepare the secrets for Kubernetes, just enter the right values as instructed by comments and run `kubectl apply -f jenkins-secret-do-not-recommit.yaml -n jenkins` - you may need to create the namespace first. HOWEVER you do of course not want to commit the actual values, and we should aim to use proper external secrets manager like Vault or some Argo-flavored thing (which does also have a plugin for Vault)
 
-Note that the secret added there is for OAuth and would live GitHub-side in a place like https://github.com/organizations/Terasology/settings/applications - after setup you also define a GitHub Server within Jenkins config and end up with GitHub apps added in places like https://github.com/organizations/MovingBlocks/settings/installations (see below)
+Note that the secret added there is for OAuth and would live GitHub-side at https://github.com/organizations/MovingBlocks/settings/applications/132034
 
 ## GitHub API via GitHub App
 
@@ -37,7 +37,7 @@ That app is owned by [MovingBlocks](https://github.com/MovingBlocks), and is add
 
 Follow the [guide][github-app] to create Credentials of type **GitHub App**.
 
-+ Manage Jenkins ⇨ Manage Credentials ⇨ store=_Jenkins_ domain=_(global)_ ⇨ Add Credentials
++ Manage Jenkins ⇨ Manage Credentials ⇨ store=_Jenkins_ domain=_(global)_ ⇨ Add "GitHub App" Credentials
 + The **App Id** is `100575` (visible on the [app's settings page](https://github.com/organizations/MovingBlocks/settings/apps/terasology-jenkins-io)).
 + Do open the *Advanced* options when setting up these credentials and fill in the **Owner** field.
   - We need to create one Credentials entry for each GitHub Organization we operate on. These may use the same App ID and secret, but set different Owners.
@@ -49,14 +49,14 @@ Follow the [guide][github-app] to create Credentials of type **GitHub App**.
 
 [github-app]: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc (GitHub App Authentication Guide)
 
-The key generated from the GitHub application is included in this repo as `terasology-jenkins-io.github-app.private-key.pkcs8` in the format needed by Jenkins.
+The key generated from the GitHub application was included in this repo as `terasology-jenkins-io.github-app.private-key.pkcs8` in the format needed by Jenkins, that has been moved to a password safe.
 
 ## Various secrets
 
 Jenkins has built up a lot of credentials over the years, and all the original instructions are in the https://github.com/MovingBlocks/InfraPlayground repo - for this rejuvenation attempt let us see how few we can get away with:
 
 * (Username with password) user `gooey` the Artifactory user (id `artifactory-gooey`)
-* (Username with password) user `GooeyHub` the GitHub user - used as our primary robot account for anything automation.
+* (Username with password) user and id `GooeyHub` the GitHub user - used as our primary robot account for anything automation.
 * (Secret text) id `GooeyHubAccessToken` with the personal access token for GooeyHub again (different credential types may be needed in some contexts)
 * (Username with password) user `gooeyhub` on Docker Hub with id `docker-hub-terasology-token`
 * (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via servevr settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
@@ -96,7 +96,7 @@ JCasC is mixed in with regular Helm config in the values files included in this 
 Job DSL on the other hand requires an initial seed job be created manually (it could also be automated, really, but it is a one-time tiny action) then ideally shepherded a bit as all the seed job spins up hopefully without choking the entire instance (we generate _a lot_ of jobs which can trigger a "build storm" of sorts that'll go for a while)
 
 * Create a freestyle job at the Jenkins root named "BaseSeedJob", restrict it to `master` (or `main`) label (standard for all Job DSL seed jobs), perform "Process Job DSLs" via "Use provided script" then pasting in contents from `jobdsl/BaseSeedJob.groovy`
-* Run the base seed job once
+* Run the base seed job once (it may fail the first time insisting on first being approved under Manage Jenkins / ScriptApproval - do so then rerun)
 * There now should be folder-specific seed jobs inside the Utilities folder. Trigger them as needed and actual build jobs will be created. Note that multi-branch pipeline jobs will trigger _all their qualified branches and PRs_ for immediate builds, so don't fire everything off at once
 * Module mega-jobs are special and have one more layer of seed jobs (one per letter, to better organize the larger number of jobs). Find them either in the Utilities folder or in the Nanoware case inside its folder (testing focus)
   * Note that no module jobs should be triggered (their DSL-generated Organization Folder jobs won't auto-build on their own) until their associated engine job has built the primary branch - the module build harness needs to be copied from there
@@ -109,6 +109,4 @@ If you see a *bunch* of failed builders the cluster may have maxed out. Either j
 
 ## Left to do
 
-* Add the Job DSL jobs including pulling in the PluginAuditizer
 * Add remaining build agents - done but not tested
-* Other GitHub setup - we were using an app to do Checks and such (may just be adding/adjusting a secret)
