@@ -4,6 +4,10 @@ Default user/pass: admin/password - will immediately be asked to change as part 
 
 The setup in this directory will bring up an empty Artifactory, the one-time migration of the Terasology Artifactory from legacy to Kubernetes will be covered in passing but as a one-time event not be considered fully within scope of solid details - hopefully we'll never need to upgrade 3-4 major versions up on a completely different infrastructure paradigm again!
 
+For Helm chart details see https://artifacthub.io/packages/helm/jfrog/artifactory and keep in mind there are several flavors of the Artifactory chart which themselves are sub-charts that we then subchart and deploy via Argo ...
+
+See also https://jfrog.com/help/r/jfrog-installation-setup-documentation/auto-generated-passwords-internal-postgresql which was a bit of an initial oops to miss. The following command will retrieve the password: `kubectl get secret terartifactory-artifactory-postgresql -n artifactory -o jsonpath="{.data.postgresql-password}" | base64 --decode`
+
 ## Artifactory migration 2023
 
 This was a one-time event to carry content from our old artifactory.terasology.org forward from v4.3.3 to 7.55 in one go, in about the lowest findable amount of effort. "Proper" migration would have included one major version at a time and other headaches, but it turned out that just enough stuff worked if we did an export of system settings + individual repos we wanted to carry forward (in part as there was simply not enough space on the system to try a larger export - attempts were even made to incrementally zip the whole file store over a lengthy journey involving lots of manual downloads and uploads to to no avail)
