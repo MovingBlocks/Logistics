@@ -37,11 +37,13 @@ organizationFolder "$baseModuleFolderName/$letter", {
     // TODO: May need to tweak the cleanup config
     description "Build jobs for Terasology modules under the test org Nanoware. **NOTE:** This job is hardwired to very few modules<br><br>This job targets the <b>develop</b> engine and ModuleJteConfig branches"
     displayName "$letter"
-    
+
     triggers {
-        periodic(24 * 60)  // Scan for folder updates once a day, otherwise may only trigger when jobs are re-saved
+        periodicFolderTrigger {
+            interval("1440")  // Scan for folder updates once a day, otherwise may only trigger when jobs are re-saved
+        }
     }
-    
+
     organizations {
         github {
             credentialsId credId
@@ -66,7 +68,7 @@ organizationFolder "$baseModuleFolderName/$letter", {
             }
         }
     }
-    
+
     // See https://issues.jenkins-ci.org/browse/JENKINS-60874 - the fork trait doesn't work yet due to issues. So we just add it in this way
     configure {
         it / 'navigators' / 'org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator' / 'traits' << {
@@ -102,14 +104,14 @@ organizationFolder "$baseModuleFolderName/$letter", {
             }
         }
     }
-    
+
     // These two blocks awkwardly deal with 'projectFactories' { whatever } failing to an ambiguous Node/String thing, despite that working elsewhere
     configure {
         // This blanks out the existing 'projectFactories' node (with Jenkinsfile default) since we for some reason can't replace it via normal syntax
         def oldFactoryNode = it / 'projectFactories' / 'org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory'
         oldFactoryNode.replaceNode {}
     }
-  
+
     configure {
         // This then adds the JTE factory, as for some reason the << {...} to append works just fine, but {} to replace doesn't
         it / 'projectFactories' << 'org.boozallen.plugins.jte.job.TemplateMultiBranchProjectFactory' {

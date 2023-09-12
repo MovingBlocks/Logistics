@@ -20,6 +20,8 @@ multibranchPipelineJob('Nanoware/TeraNUI') {
         }
     }
     triggers {
-        periodic(24 * 60)  // Scan for folder updates once a day, otherwise may only trigger when jobs are re-saved
+        periodicFolderTrigger {
+            interval("1440")  // Scan for folder updates once a day, otherwise may only trigger when jobs are re-saved
+        }
     }
 }
