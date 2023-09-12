@@ -60,9 +60,11 @@ Jenkins has built up a lot of credentials over the years, and all the original i
 * (Secret text) id `GooeyHubAccessToken` with the personal access token for GooeyHub again (different credential types may be needed in some contexts)
 * (Username with password) user `gooeyhub` on Docker Hub with id `docker-hub-terasology-token`
 * (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via servevr settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
+  * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there
 
 ## More config
 
+* For backwards compatibility may want to attach the `master` (and `built-in` ?) label to the Jenkins controller until `main` is in use everywhere. Set under "Build Executor Status" link - Built-In Node - Configure (space separate multiple labels)
 * There is a `content.terasology.io` (or whichever domain) defined for Jenkins as a secondary URL beyond the base jenkins subdomain. This is to help host certain other kinds of content from Jenkins like javadoc. Its ingress should spin up automatically as part of our setup, unsure if we need any other toggles or if this even has or will go out of date at some point.
   * Set **Resource Root URL** to https://content.terasology.io/ under Manage Jenkins / general to enable this within Jenkins
   * See See https://www.jenkins.io/doc/book/security/user-content/#resource-root-url for details

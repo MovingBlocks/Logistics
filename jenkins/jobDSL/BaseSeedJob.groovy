@@ -39,7 +39,7 @@ folderList.each { folderName ->
                     url("https://github.com/MovingBlocks/Logistics.git")
                     credentials("github-app-terasology-jenkins-io")
                 }
-                branch("master")
+                branch("main")
             }
         }
         steps {
