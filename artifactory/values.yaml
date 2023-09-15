@@ -16,7 +16,8 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
       postgresql:
         persistence:
           size: 20Gi # Default was a bizzare 200 Gi
-        postgresqlPassword: gzlAmVnfti # TODO: Needs to be moved to a secrets manager and rotated. Not a big danger, Postgres is not exposed  ..
+        postgresqlPassword: artifactoryDBpass1! # Been oddly awkward trying to hide this but the DB is internal anyway so ...
+          # TODO: Needs to be moved to a secrets manager and rotated. Not a big danger, Postgres is not exposed  ..
       nginx:
         enabled: false
       ingress:

@@ -4,9 +4,9 @@ Default user/pass: admin/password - will immediately be asked to change as part 
 
 The setup in this directory will bring up an empty Artifactory, the one-time migration of the Terasology Artifactory from legacy to Kubernetes will be covered in passing but as a one-time event not be considered fully within scope of solid details - hopefully we'll never need to upgrade 3-4 major versions up on a completely different infrastructure paradigm again!
 
-For Helm chart details see https://artifacthub.io/packages/helm/jfrog/artifactory and keep in mind there are several flavors of the Artifactory chart which themselves are sub-charts that we then subchart and deploy via Argo ...
+For Helm chart details see https://github.com/jfrog/charts/blob/master/stable/artifactory/values.yaml or https://artifacthub.io/packages/helm/jfrog/artifactory and keep in mind there are several flavors of the Artifactory chart which themselves are sub-charts that we then subchart and deploy via Argo ...
 
-See also https://jfrog.com/help/r/jfrog-installation-setup-documentation/auto-generated-passwords-internal-postgresql which was a bit of an initial oops to miss. The following command will retrieve the password: `kubectl get secret terartifactory-artifactory-postgresql -n artifactory -o jsonpath="{.data.postgresql-password}" | base64 --decode`
+See also https://jfrog.com/help/r/jfrog-installation-setup-documentation/auto-generated-passwords-internal-postgresql which was a bit of an initial oops to miss. The following command will retrieve the password: `kubectl get secret terartifactory-artifactory-postgresql -n artifactory -o jsonpath="{.data.postgresql-password}" | base64 --decode` - however if the password isn't hardwired on initial install it may regenerate and go out of sync vs the DB pod. Since Postgresql is entirely internal to the cluster for the moment a hardwired plaintext password is included in the values file. The Artifactory chart does not yet feel very cloud native, as there appears to be no way to indicate getting secrets from existing k8s secrets and it is just overall awkward..
 
 ## Artifactory migration 2023
 
