@@ -29,11 +29,11 @@ job("Utilities/PluginAuditizer") {
                 println("    <version>${plugin.version}</version>")
                 println("</dependency>")
 
-                pipelineyThingsArray.add( "compile group: '${plugin.manifest.mainAttributes.getValue('Group-Id')}', name: '${plugin.shortName}', version: '${plugin.version}', ext: 'jar'\n" )
-                pluginTxtArray.add( plugin.shortName + ":" + plugin.version + "\n" )
-                pluginTxtArrayLatest.add( plugin.shortName + ":latest\n" )
-                helmValuesArray .add( "- \"" + plugin.shortName + ":" + plugin.version + "\"\n" )
-                helmValuesArrayLatest .add( "- \"" + plugin.shortName + ":latest\"\n" )
+                pipelineyThingsArray.add( "compile group: '${plugin.manifest.mainAttributes.getValue('Group-Id')}', name: '${plugin.shortName}', version: '${plugin.version}', ext: 'jar'\\n" )
+                pluginTxtArray.add( plugin.shortName + ":" + plugin.version + "\\n" )
+                pluginTxtArrayLatest.add( plugin.shortName + ":latest\\n" )
+                helmValuesArray .add( "- \"" + plugin.shortName + ":" + plugin.version + "\"\\n" )
+                helmValuesArrayLatest .add( "- \"" + plugin.shortName + ":latest\"\\n" )
 
                 List<PluginWrapper.Dependency> pluginDependencies = plugin.dependencies
                 if (pluginDependencies.size() > 0) {
