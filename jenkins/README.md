@@ -83,6 +83,7 @@ The pinned-list can be generated and maintained by an included "PluginAuditizer"
 * Run the job to see it print out the lists, two last ones in particular
   * "plugins.txt style" - includes version pins for _currently installed plugins_
   * "plugins.txt style - latest" - simply makes a list variant with `:latest` everywhere
+  * Helm values file likewise for both variants, suitable for pasting into `values-plugins.yaml` so long as indentation is made correct)
 * To prepare for an upgrade take the "latest" list contents and paste them into `values-plugins.yaml` to replace the pinned versions
   * Alternatively and maybe easier: simply go update all available plugins manually and add in any others you want then run the job and grab the version pins for an IaC update
 * Apply the updated config (Helm/Argo) - possibly to a test Jenkins with an already-updated controller version (may still work on a pre-upgraded controller but some plugins may complain)
@@ -101,6 +102,7 @@ JCasC is mixed in with regular Helm config in the values files included in this 
 Job DSL on the other hand requires an initial seed job be created manually (it could also be automated, really, but it is a one-time tiny action) then ideally shepherded a bit as all the seed job spins up hopefully without choking the entire instance (we generate _a lot_ of jobs which can trigger a "build storm" of sorts that'll go for a while)
 
 * Create a freestyle job at the Jenkins root named "BaseSeedJob", restrict it to the `main` label (standard for all Job DSL seed jobs), perform "Process Job DSLs" via "Use provided script" then pasting in contents from `jobdsl/BaseSeedJob.groovy`
+  * *NOTE:* Since this hand is hand-configured if its file is changed in Git the changes have to be pasted into the job in Jenkins as well
 * Run the base seed job once (it may fail the first time insisting on first being approved under Manage Jenkins / ScriptApproval - do so then rerun)
 * There now should be folder-specific seed jobs inside the Utilities folder. Trigger them as needed and actual build jobs will be created. Note that multi-branch pipeline jobs will trigger _all their qualified branches and PRs_ for immediate builds, so don't fire everything off at once
 * Module mega-jobs are special and have one more layer of seed jobs (one per letter, to better organize the larger number of jobs). Find them either in the Utilities folder or in the Nanoware case inside its folder (testing focus)

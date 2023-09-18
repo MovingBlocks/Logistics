@@ -10,6 +10,8 @@ job("Utilities/PluginAuditizer") {
         def pipelineyThingsArray = []
         def pluginTxtArray = []
         def pluginTxtArrayLatest = []
+        def helmValuesArray = []
+        def helmValuesArrayLatest = []
         // Veracode plugin if installed is not distributed from the main index and has to be handled manually
         def pluginsToExclude = "veracode-jenkins-plugin"
 
@@ -27,9 +29,11 @@ job("Utilities/PluginAuditizer") {
                 println("    <version>${plugin.version}</version>")
                 println("</dependency>")
 
-                pipelineyThingsArray.add( "compile group: '${plugin.manifest.mainAttributes.getValue('Group-Id')}', name: '${plugin.shortName}', version: '${plugin.version}', ext: 'jar'\\n" )
-                pluginTxtArray.add( plugin.shortName + ":" + plugin.version + "\\n" )
-                pluginTxtArrayLatest.add( plugin.shortName + ":latest\\n" )
+                pipelineyThingsArray.add( "compile group: '${plugin.manifest.mainAttributes.getValue('Group-Id')}', name: '${plugin.shortName}', version: '${plugin.version}', ext: 'jar'\n" )
+                pluginTxtArray.add( plugin.shortName + ":" + plugin.version + "\n" )
+                pluginTxtArrayLatest.add( plugin.shortName + ":latest\n" )
+                helmValuesArray .add( "- \"" + plugin.shortName + ":" + plugin.version + "\"\n" )
+                helmValuesArrayLatest .add( "- \"" + plugin.shortName + ":latest\"\n" )
 
                 List<PluginWrapper.Dependency> pluginDependencies = plugin.dependencies
                 if (pluginDependencies.size() > 0) {
@@ -65,6 +69,21 @@ job("Utilities/PluginAuditizer") {
         }
         println pluginTxtListLatest
 
+        println "Helm values file style: "
+        helmValuesArray .sort()
+        helmValueList = ""
+        for (str in helmValuesArray ) {
+            helmValueList += str
+        }
+        println helmValueList
+
+        println "Helm values file style - latest: "
+        helmValuesArrayLatest .sort()
+        helmValueListLatest = ""
+        for (str in helmValuesArrayLatest ) {
+            helmValueListLatest += str
+        }
+        println helmValueListLatest
         ''')
     }
 }
