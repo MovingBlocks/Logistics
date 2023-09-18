@@ -3,7 +3,7 @@ jenkins:
     # This archetype agent gets used to inherit values but also serves as a standard builder
     podName: kaniko-precached-jdk11
     # Note that an additional "terajenkins-jenkins-agent" label gets added everywhere (podLabels thing?)
-    customJenkinsLabels: "kaniko-precached-jdk11 ts-engine ts-module lib heavy light java11"
+    customJenkinsLabels: "kaniko-precached-jdk11 ts-engine ts-module lib heavy light java11 light-java"
     nodeUsageMode: "EXCLUSIVE"
     sideContainerName: builder
     image: terasology/jenkins-precached-agent

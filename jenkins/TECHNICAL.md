@@ -56,6 +56,8 @@ An important part of Job DSL and jobs in general is assigning stuff to the right
 
 *Note:* If jobs are created via DSL that include system Groovy scripts (able to interact with Jenkins itself at an admin level, so hugely powerful) they'll need to be manually approved under Manage Jenkins once - this is an annoying "security" feature there doesn't appear to be an easy way to greenlight ahead of time despite the Job DSL stuff itself being at the admin-only level and OKed by being written by, well, admins.
 
+https://plugins.jenkins.io/permissive-script-security/ in theory should allow an override for this (ignore need for approval / run permissively yet log), but it no longer appears to work even with `-Dpermissive-script-security.enabled=no_security` correctly showing up in `JAVA_OPTS` within Jenkins system info :-( There may be more experimentation needed, could TODO investigate maybe checking on https://issues.jenkins.io/browse/JENKINS-47570?jql=resolution%20is%20EMPTY%20and%20component%3D21467
+
 ### Job DSL Syntax Highlighting
 
 Gradle bits have been included in an attempt to allow recognition of the Groovy DSL for Job DSL - see https://github.com/jenkinsci/job-dsl-plugin/wiki/IDE-Support
