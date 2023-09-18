@@ -36,9 +36,9 @@ jenkins:
           secretKeyRef:
             name: jenkins-secrets
             key: github-client-secret
-      # The casc piece came by default, other is required to enable https://plugins.jenkins.io/permissive-script-security/ (TODO: May need outright no_security vs enabled? Had that in the past)
+      # The casc piece came by default, other is required to enable https://plugins.jenkins.io/permissive-script-security/
       - name: JAVA_OPTS
-        value: "-Dcasc.reload.token=terajenkins-0 -Dpermissive-script-security.enabled=true"
+        value: "-Dcasc.reload.token=terajenkins-0 -Dpermissive-script-security.enabled=no_security"
     ingress:
       enabled: true
       hostName: jenkins.terasology.io
