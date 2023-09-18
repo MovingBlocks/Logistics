@@ -20,7 +20,7 @@ for (char letter : letters) {
     // We actually make a seed job for each of the actual jobs, to allow throttling (don't create all and org-scan at once)
     job(seedModuleFolderNameLetter) {
         description("This seed job creates one associated letter-based org folders containing game modules. By making one seed job for each letter we can throttle the amount of jobs being created a bit")
-        label("master")
+        label("main")
         steps {
             dsl {
                 // The embedded job below is a bit more complicated due to the usage of the Jenkins Templating Engine, which may not be explicitly supported by Job DSL yet

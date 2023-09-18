@@ -1,7 +1,7 @@
 // Make a utility job to watch the build queue for broken stuff
 job("Utilities/BuildWatchinator") {
     description('Runs occasionally to check the queue for builds that have run for too long or have lost their build agent')
-    label("master")
+    label("main")
     steps {
         systemGroovyCommand('''
 import jenkins.model.*
@@ -39,8 +39,8 @@ runningBuilds.each {
     println "Its parent project is $parentProjectName and it has been running for $durationMs ms on $executor"
 
     // Termination case one: We lost our executor but Jenkins still thinks it might come back (it won't if evicted or preempted)
-    // Difficulty: If a build agent is lost the active executor appears to revert back to a flyweight one on the master ...
-    // May be the case that pipeline jobs where a stage is active on an agent the pipeline itself is still counted on master
+    // Difficulty: If a build agent is lost the active executor appears to revert back to a flyweight one on the controller ...
+    // May be the case that pipeline jobs where a stage is active on an agent the pipeline itself is still counted on the controller
     // So as an alternative that seems to work we just compare the active build against a list earlier of broken agents
     String offlineSearchTerm = "{runId=" + parentProjectName
     //println "Checking if '$offlineSearchTerm' occurs in the offline build list"
@@ -88,7 +88,9 @@ return null
         ''')
     }
 
+/* TODO: Consider whether this is still needed - leaving it not scheduled until we see bad builds again
     triggers {
         cron("H/10 * * * *")
     }
+*/
 }

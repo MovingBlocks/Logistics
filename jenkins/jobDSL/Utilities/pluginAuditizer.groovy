@@ -1,6 +1,6 @@
 job("Utilities/PluginAuditizer") {
     description('Prints a listing of installed plugins in a variety of useful formats')
-    label("master")
+    label("main")
 
     steps {
         systemGroovyCommand ('''

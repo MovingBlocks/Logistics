@@ -32,7 +32,7 @@ folderList.each { folderName ->
     println "Working on folder $folderName"
     job("Utilities/${folderName}SeedJob") {
         description("This seed job manages its folder based on an infra repo with DSL scripts")
-        label("master")
+        label("main")
         scm {
             git {
                 remote {

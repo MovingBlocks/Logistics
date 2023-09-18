@@ -64,7 +64,7 @@ Jenkins has built up a lot of credentials over the years, and all the original i
 
 ## More config
 
-* For backwards compatibility may want to attach the `master` (and `built-in` ?) label to the Jenkins controller until `main` is in use everywhere. Set under "Build Executor Status" link - Built-In Node - Configure (space separate multiple labels)
+* For backwards compatibility may want to attach the `master` (and `built-in` ?) label to the Jenkins controller until `main` is in use everywhere. Set under "Build Executor Status" link - Built-In Node - Configure (space separate multiple labels). Initial batch of renames have been done for DSL seed jobs since they're the main ones needing the controller.
 * There is a `content.terasology.io` (or whichever domain) defined for Jenkins as a secondary URL beyond the base jenkins subdomain. This is to help host certain other kinds of content from Jenkins like javadoc. Its ingress should spin up automatically as part of our setup, unsure if we need any other toggles or if this even has or will go out of date at some point.
   * Set **Resource Root URL** to https://content.terasology.io/ under Manage Jenkins / general to enable this within Jenkins
   * See See https://www.jenkins.io/doc/book/security/user-content/#resource-root-url for details
@@ -76,7 +76,7 @@ Jenkins has built up a lot of credentials over the years, and all the original i
 
 ## Plugins and upgrades
 
-For ease we are simply indicating version-pinned plugins via Helm values file, using a custom built image with specific plugins might be _slightly_ more efficient but hardly worth it.
+For ease we are simply indicating version-pinned plugins via Helm values file, instead using a custom built image with specific plugins might be _slightly_ more efficient but hardly worth it.
 
 The pinned-list can be generated and maintained by an included "PluginAuditizer" utility job that writes out plugin version lists in a few different formats. Typical approach:
 
@@ -84,10 +84,13 @@ The pinned-list can be generated and maintained by an included "PluginAuditizer"
   * "plugins.txt style" - includes version pins for _currently installed plugins_
   * "plugins.txt style - latest" - simply makes a list variant with `:latest` everywhere
 * To prepare for an upgrade take the "latest" list contents and paste them into `values-plugins.yaml` to replace the pinned versions
+  * Alternatively and maybe easier: simply go update all available plugins manually and add in any others you want then run the job and grab the version pins for an IaC update
 * Apply the updated config (Helm/Argo) - possibly to a test Jenkins with an already-updated controller version (may still work on a pre-upgraded controller but some plugins may complain)
 * Do any testing to see if the newer plugin versions cause trouble
 * Run the "PluginAuditizer" again and grab the _pinned_ list this time and paste it into `values-plugins.yaml` - note that new dependencies may appear in the list.
 * Re-apply the config (should result in no change but pins to plugins to avoid surprises later)
+
+To upgrade the Jenkins controller itself simply update the version tag in `values.yaml` under the `controller` section. Jenkins' admin section will suggest when a new LTS is available, you can confirm via https://hub.docker.com/r/jenkins/jenkins/tags?page=1&name=lts - you may want to do this before or after plugins being installed, such first updating plugins, getting the new pinned plugin list, updating IaC along with the Jenkins controller version then sync in Argo and you should be set.
 
 ## JCasC and Job DSL
 
@@ -97,7 +100,7 @@ JCasC is mixed in with regular Helm config in the values files included in this 
 
 Job DSL on the other hand requires an initial seed job be created manually (it could also be automated, really, but it is a one-time tiny action) then ideally shepherded a bit as all the seed job spins up hopefully without choking the entire instance (we generate _a lot_ of jobs which can trigger a "build storm" of sorts that'll go for a while)
 
-* Create a freestyle job at the Jenkins root named "BaseSeedJob", restrict it to `master` (or `main`) label (standard for all Job DSL seed jobs), perform "Process Job DSLs" via "Use provided script" then pasting in contents from `jobdsl/BaseSeedJob.groovy`
+* Create a freestyle job at the Jenkins root named "BaseSeedJob", restrict it to the `main` label (standard for all Job DSL seed jobs), perform "Process Job DSLs" via "Use provided script" then pasting in contents from `jobdsl/BaseSeedJob.groovy`
 * Run the base seed job once (it may fail the first time insisting on first being approved under Manage Jenkins / ScriptApproval - do so then rerun)
 * There now should be folder-specific seed jobs inside the Utilities folder. Trigger them as needed and actual build jobs will be created. Note that multi-branch pipeline jobs will trigger _all their qualified branches and PRs_ for immediate builds, so don't fire everything off at once
 * Module mega-jobs are special and have one more layer of seed jobs (one per letter, to better organize the larger number of jobs). Find them either in the Utilities folder or in the Nanoware case inside its folder (testing focus)

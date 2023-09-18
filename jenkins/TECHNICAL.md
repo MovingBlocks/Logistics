@@ -50,9 +50,9 @@ That seed job in turn will load any `*.groovy` files in an associated directory 
 
 It isn't automated (yet at least) that all scripts under that directory will naturally appear inside the Terasology directory itself - that has to be indicated in the DSL script itself.
 
-Job DSL itself is a large topic but is also _intensely well documented_ both at its [plugin page](https://plugins.jenkins.io/job-dsl/) in its [wiki](https://github.com/jenkinsci/job-dsl-plugin/wiki) and there's even a full API viewer customized to a given Jenkins [like ours](http://jenkins.terasology.io/testmaster/plugin/job-dsl/api-viewer/index.html) - there are also oodles of articles, guides, tutorials, etc online.
+Job DSL itself is a large topic but is also _intensely well documented_ both at its [plugin page](https://plugins.jenkins.io/job-dsl/) in its [wiki](https://github.com/jenkinsci/job-dsl-plugin/wiki) and there's even a full API viewer customized to a given Jenkins [like ours](https://jenkins.terasology.io/plugin/job-dsl/api-viewer/index.html) - there are also oodles of articles, guides, tutorials, etc online.
 
-An important part of Job DSL and jobs in general is assigning stuff to the right node. All seed jobs are tied to the `master` label as that's where they need to run. For jenkins.terasology.io multiple build agents / labels will be available. In a scripted Jenkinsfile you can target multiple labels like so: `node ("default-java || heavy-java") { ...`
+An important part of Job DSL and jobs in general is assigning stuff to the right node. All seed jobs are tied to the `main` label as that's where they need to run. For jenkins.terasology.io multiple build agents / labels will be available. In a scripted Jenkinsfile you can target multiple labels like so: `node ("default-java || heavy-java") { ...`
 
 *Note:* If jobs are created via DSL that include system Groovy scripts (able to interact with Jenkins itself at an admin level, so hugely powerful) they'll need to be manually approved under Manage Jenkins once - this is an annoying "security" feature there doesn't appear to be an easy way to greenlight ahead of time despite the Job DSL stuff itself being at the admin-only level and OKed by being written by, well, admins.
 
