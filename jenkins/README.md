@@ -117,3 +117,10 @@ If you see a *bunch* of failed builders the cluster may have maxed out. Either j
 ## Left to do
 
 * Add remaining build agents - done but not tested
+* Fix https://docs.gradle.org/current/userguide/upgrading_version_7.html#abstractarchivetask_api_cleanup for the Omega job
+* More plugin considerations
+  * maybe theme-manager - was on old server but unsure. Better icons plz ...
+  * in theory startup-trigger-plugin but that was a temp need? Deleted job instead
+  * maybe ssh-slaves - unsure if that would power either Mac or Win agents? Prolly not
+  * maybe pipeline-milestone-step but unsure if we ever use it
+  * thin-plugin could probably be dropped - or use it just in case for regular backups?

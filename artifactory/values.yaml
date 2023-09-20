@@ -16,8 +16,9 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
       postgresql:
         persistence:
           size: 20Gi # Default was a bizzare 200 Gi
-        postgresqlPassword: artifactoryDBpass1! # Been oddly awkward trying to hide this but the DB is internal anyway so ...
-          # TODO: Needs to be moved to a secrets manager and rotated. Not a big danger, Postgres is not exposed  ..
+        postgresqlPassword: artifactoryDBpass1! # Been oddly awkward trying to hide this but the DB is internal anyway so ... maybe look at Backstage app config for a secrets-based option?
+          # TODO: There is actually also the "postgresql-postgres-password" which I guess is the admin account's password, which may still cycle? Eep. `NQjjpSb5N` might have been it at some point ..
+          # TODO: Needs to be moved to a secrets manager and rotated. Not a big danger, Postgres is not exposed  .. see also https://github.com/jfrog/charts/issues/859
       nginx:
         enabled: false
       ingress:
