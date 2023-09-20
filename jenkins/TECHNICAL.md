@@ -86,4 +86,4 @@ node("kaniko") {
 }
 ```
 
-Pre-cached Kaniko-based agents are built using https://github.com/MovingBlocks/JenkinsAgentPrecachedJava and have jobs made via DSL in the Utilities folder. See also the https://github.com/MovingBlocks/JenkinsAgentAndroid agent which is a little simpler (no parallel)
+Pre-cached Kaniko-based agents are built using https://github.com/MovingBlocks/JenkinsAgentPrecachedJava and have jobs made via DSL in the Utilities folder. See also the https://github.com/MovingBlocks/JenkinsAgentAndroid agent which is a little simpler (no parallel). Generally we publish to https://hub.docker.com/u/terasology

@@ -1,0 +1,63 @@
+First chunk here was originally in values.yaml. Not sure if it matters to have the clientID hard coded vs stored in the secret.
+
+#TODO: Yeah none of this works but editing the config map directly with kubectl does
+  configs:
+    cm:
+      dex.config: |
+        connectors:
+          - type: github
+            id: github
+            name: GitHub
+            config:
+              clientID: 852626461c3a70ed2070
+              clientSecret: ${{ .Values.my-github-oauth-secret.data.github-oath-client-secret }}
+              orgs:
+              - name: CervTest
+
+
+
+# Sample CM from kubectl edit configmap argocd-cm -n argocd
+
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+data:
+  admin.enabled: "true"
+  application.instanceLabelKey: argocd.argoproj.io/instance
+  dex.config: |
+    connectors:
+      - type: github
+        id: github
+        name: GitHub
+        config:
+          clientID: 852626461c3a70ed2070
+          clientSecret: $my-github-oauth-secret:github-oath-client-secret
+          orgs:
+          - name: CervTest
+  exec.enabled: "false"
+  server.rbac.log.enforce.enable: "false"
+  timeout.hard.reconciliation: 0s
+  timeout.reconciliation: 180s
+  url: https://argocd.cmdbee.org
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"admin.enabled":"true","application.instanceLabelKey":"argocd.argoproj.io/instance","exec.enabled":"false","server.rbac.log.enforce.enable":"false","timeout.hard.reconciliation":"0s","timeout.reconciliation":"180s"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app.kubernetes.io/component":"server","app.kubernetes.io/instance":"terargo-argocd","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"argocd-cm","app.kubernetes.io/part-of":"argocd","argocd.argoproj.io/instance":"terargo-argocd","helm.sh/chart":"argo-cd-5.34.6"},"name":"argocd-cm","namespace":"argocd"}}
+    meta.helm.sh/release-name: terargo-argocd
+    meta.helm.sh/release-namespace: argocd
+  creationTimestamp: "2023-06-09T01:59:22Z"
+  labels:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/instance: terargo-argocd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+    argocd.argoproj.io/instance: terargo-argocd
+    helm.sh/chart: argo-cd-5.34.6
+  name: argocd-cm
+  namespace: argocd
+  resourceVersion: "96428"
+  uid: 4033f4b9-60fa-455f-ac66-d26c177d1e3e
