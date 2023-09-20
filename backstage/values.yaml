@@ -1,0 +1,28 @@
+backstage:
+  backstage:
+    extraEnvVarsSecrets:
+      - backstage-secrets
+    extraAppConfig:
+      - filename: app-config.extra.yaml
+        configMapRef: backstage-extra-config
+    image:
+      repository: ghcr.io/cervator/backstage
+      tag: latest
+      #debug: true
+
+  postgresql:
+    enabled: true
+    auth:
+      existingSecret: backstage-secrets
+
+  ingress:
+    enabled: true
+    host: backstage.terasology.io
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      #cert-manager.io/cluster-issuer: letsencrypt-stage
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      kubernetes.io/tls-acme: "true"
+    tls:
+      enabled: true
+      secretName: backstage-tls-secret

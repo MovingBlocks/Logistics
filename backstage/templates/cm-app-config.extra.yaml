@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backstage-extra-config
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+data:
+  app-config.extra.yaml: |
+    # Variables unrelated to Helm chart used for organizing
+    variables:
+      catalogFilePath: "/app"
+
+    app:
+      title: Proto Backstage
+      baseUrl: https://backstage.terasology.io
+
+    #organization:
+    #  name: Proto Customer
+
+    backend:
+      logging:
+        level: debug
+      # Used for enabling authentication, secret is shared by all backend plugins
+      # See https://backstage.io/docs/auth/service-to-service-auth for
+      # information on the format
+      # auth:
+      #   keys:
+      #     - secret: ${BACKEND_SECRET}
+      baseUrl: https://backstage.terasology.io
+      listen:
+        port: 7007
+        # Uncomment the following host directive to bind to specific interfaces
+        # host: 127.0.0.1
+      csp:
+        connect-src: ["'self'", 'http:', 'https:']
+      cors:
+        origin: http://*
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+
+      database:
+        # config options: https://node-postgres.com/apis/client
+        client: pg
+        connection:
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+
+      # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+
+    integrations:
+      github:
+        - host: github.com
+          # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+          # about setting up the GitHub integration here: https://backstage.io/docs/getting-started/configuration#setting-up-a-github-integration
+          token: ${GITHUB_TOKEN}
+
+    # Reference documentation http://backstage.io/docs/features/techdocs/configuration
+    # Note: After experimenting with basic setup, use CI/CD to generate docs
+    # and an external cloud storage when deploying TechDocs for production use-case.
+    # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+    techdocs:
+      builder: 'local' # Alternatives - 'external'
+      generator:
+        runIn: 'docker' # Alternatives - 'local'
+      publisher:
+        type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+
+    auth:
+      environment: development
+      providers:
+        github:
+          development:
+            # Applied this then remembered need to adjust code to activate the login. Also need the integration variant as well to create new repos
+            # https://github.com/organizations/CervTest/settings/applications/2241184
+            clientId: ${GITHUB_AUTH_CLIENT_ID}
+            clientSecret: ${GITHUB_AUTH_CLIENT_SECRET}
+
+
+    scaffolder:
+      # see https://backstage.io/docs/features/software-templates/configuration for software template options
+
+    catalog:
+
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, Domain, API, Resource, Location, Template, User, Group]
+      locations:
+        # Ghost blog example template
+        - type: url
+          target: https://github.com/Cervator/backstage-template-ghost/blob/main/template.yaml
+
+        # Local example data, file locations are relative to the backend process, typically `packages/backend`
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/lambgoat.yaml
+
+        - type: file
+          target: ${CATALOG_FILE_PATH}/soundcheck/bluedemo.yaml
+
+        - type: file
+          target: ${CATALOG_FILE_PATH}/soundcheck/skydemo.yaml
+
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/entities.yaml
+
+        # Local example template
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/template/template.yaml
+          rules:
+            - allow: [Template]
+
+        # Local example organizational data
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/org.yaml
+          rules:
+            - allow: [User, Group]
+
+        ## Uncomment these lines to add more example data
+        - type: url
+          target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+
+        ## Uncomment these lines to add an example org
+        - type: url
+          target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
+          rules:
+            - allow: [User, Group]
+
+    soundcheck:
+      programs:
+        $include: ./soundcheck/soundcheck-tracks.yaml
+      checks:
+        #$include: ./soundcheck/soundcheck-checks.yaml
+        - id: has-readme
+          rule:
+            factRef: scm:default/readme
+            path: $.exists
+            operator: equal
+            value: true
+          passedMessage: |
+            README.md was found at repository root, check passed.
+          failedMessage: |
+            README.md was not found at repository root, check failed.
+
+    spotify:
+      licenseKey: ${SPOTIFY_LICENSE}
