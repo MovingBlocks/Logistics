@@ -48,8 +48,11 @@ jenkins:
     androidBuilder:
       podName: android-agent
       customJenkinsLabels: "android"
+      sideContainerName: jnlp
       image: terasology/jenkins-android-agent
       tag: latest
+      command: '""'
+      args: "${computer.jnlpmac} ${computer.name}"
 
     # For building other images using Kaniko (the kaniko-something agents are _output_ from such)
     kanikoBuilder:
