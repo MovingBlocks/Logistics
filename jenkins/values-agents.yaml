@@ -27,6 +27,11 @@ jenkins:
       customJenkinsLabels: "kaniko-precached-jdk8"
       tag: latest-jdk8
 
+    kanikoSeventeen:
+      podName: kaniko-precached-jdk17
+      customJenkinsLabels: "kaniko-precached-jdk17 java17"
+      tag: latest-jdk17
+
     javaNative:
       podName: java-native
       customJenkinsLabels: "java-native"
