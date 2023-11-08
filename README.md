@@ -45,3 +45,7 @@ See the individual directories for more technical details on each topic - this p
   * Note that the Argo app for Argo itself may show as out of sync or otherwise weird even before updating Git - when the app is established an extra k8s label may be affixed to the related resources plus Argo hasn't really tried to Argo itself yet so ...
 1. Sync other apps as desired, such as Artifactory - other apps should already be configured to start with production-level Lets Encrypt, you only need the extra step the first time (with Argo)
 1. Over time simply modify Git as needed then go sync the relevant app in Argo (or YOLO into enabling auto-sync!)
+
+## Adding utility admin access
+
+For getting into the cluster without having to deal with GKE, `gcloud` and so on see the included `kubeconfig-sa-token.yaml` file and the step-by-step instructions via commented out lines. In short it creates a utility admin service account, binds the right access, and creates a token for logging in with said service account. Then that just needs to be put into a typical kube config. Inspired by https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengaddingserviceaccttoken.htm
