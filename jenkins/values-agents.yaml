@@ -5,13 +5,19 @@ jenkins:
     # Note that an additional "terajenkins-jenkins-agent" label gets added everywhere (podLabels thing?)
     customJenkinsLabels: "kaniko-precached-jdk11 ts-engine ts-module lib heavy light java11 light-java"
     nodeUsageMode: "EXCLUSIVE"
-    sideContainerName: builder
+    sideContainerName: jnlp
     image: terasology/jenkins-precached-agent
     tag: latest-jdk11
-    command: "/bin/sh -c"
-    args: "cat"
+    command: "/bin/sh"
+    args: "/var/jenkins_config/jenkins-agent"
     # This is needed for some reason or the controller refuses to connect this agent?
     TTYEnabled: true
+    volumes:
+      # Mount the agent start script into the container
+      - type: ConfigMap
+        configMapName: jenkins-agent-cm
+        mountPath: /var/jenkins_config/jenkins-agent
+        subPath: jenkins-agent
     # Set resources for additional agents to inherit
     resources:
       requests:
@@ -29,7 +35,7 @@ jenkins:
 
     kanikoSeventeen:
       podName: kaniko-precached-jdk17
-      customJenkinsLabels: "kaniko-precached-jdk17 java17"
+      customJenkinsLabels: "kaniko-precached-jdk17 ts-engine ts-module heavy java17"
       tag: latest-jdk17
 
     javaNative:
