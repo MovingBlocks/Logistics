@@ -45,9 +45,16 @@ Backstage the app is shipped as a stateless Docker image and needs to be rebuilt
 
 If running on older Docker installs the Backstage-provided `Dockerfile` may need to be built with `DOCKER_BUILDKIT=1 ` preceding the `build-image` command in `package.json` (and can have its default sqlite3 piece removed - but TODO that then may break something else from lacking Python)
 
+* `yarn install` - probably only need to do this once / rarely
+* `yarn tsc` - compile some typescript
+* `yarn build:backend` to make sure the backend is built
+* `yarn build-image` to then trigger an outright built Docker image
+
+You may be able to skip the `docker build` step below and just tag the image produced via yarn accordingly.
+
 ### Publishing images to GitHub
 
-Say we have a `Dockerfile` in a directory ready to build as "some-image-name" and use somewhere. It must include either following snippet to map seamlessly to a GitHub Packages repo:
+The `Dockerfile` being built must include either following snippet to map seamlessly to a GitHub Packages repo:
 
 * `LABEL org.opencontainers.image.source=https://github.com/MovingBlocks/Logistics`
 * `LABEL org.opencontainers.image.source=https://github.com/Cervator/ArtifactoryFuns`
@@ -74,6 +81,12 @@ You can also include the following in the `Dockerfile` that will cause added det
 LABEL org.opencontainers.image.description="My container image"
 LABEL org.opencontainers.image.licenses=MIT
 ```
+
+### Deploying to an online environment
+
+This repo uses Helm and a values file to deploy Backstage to a Kubernetes cluster. Make sure the tag in `values.yaml` will correctly point at your desired image then either use `helm install` or `helm upgrade`
+
+There is a ConfigMap included that contributes more configuration elements to the running image. It can be updated individually via whichever k8s means then the Backstage pod will need to be restarted for the changes to take effect.
 
 ## Gotchas
 
