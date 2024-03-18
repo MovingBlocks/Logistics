@@ -18,8 +18,34 @@ ingress:
       - wekan.terasology.io
 endpoint: wekan.terasology.io
 root_url: https://wekan.terasology.io
-mongodb-replicaset:
-  replicas: 1
+
+# Attempt to configure OAuth 2 with Keycloak
+env:
+  - name: DEBUG
+    value: true
+  - name: OAUTH2_ENABLED
+    value: true
+  - name: OAUTH2_CLIENT_ID
+    value: wekan
+  - name: OAUTH2_SERVER_URL
+    value: https://keycloak.terasology.io
+  - name: OAUTH2_AUTH_ENDPOINT
+    value: /realms/testrealm/protocol/openid-connect/auth
+  - name: OAUTH2_USERINFO_ENDPOINT
+    value: /realms/testrealm/protocol/openid-connect/userinfo
+  - name: OAUTH2_TOKEN_ENDPOINT
+    value: /realms/testrealm/protocol/openid-connect/token
+  - name: OAUTH2_SECRET
+    value: <secret from keycloak>
+  - name: OAUTH2_ID_MAP
+    value: preferred_username
+  - name: OAUTH2_USERNAME_MAP
+    value: preferred_username
+  - name: OAUTH2_FULLNAME_MAP
+    value: given_name
+  - name: OAUTH2_EMAIL_MAP
+    value: email
+
 resources:
   requests:
     memory: 256Mi
@@ -27,3 +53,6 @@ resources:
   limits:
     memory: 1Gi
     cpu: 500m
+
+mongodb-replicaset:
+  replicas: 1
