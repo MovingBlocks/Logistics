@@ -13,8 +13,43 @@ This repository documents the overall infrastructure used by The Terasology Foun
 After the age of Digital Ocean came the age of Google Kubernetes Engine, with its speed and sleek cloud tools. While the setup of a cluster can be automated it is so fast and easy along with only being needed very rarely so simple manual steps are included here. They should be convertable to different cloud hosting supporting Kubernetes fairly readily if ever needed. A few variants of our GKE setup has existed over time.
 
 * Get ready to work on GKE on Google Cloud in whatever account is available to us (get k8s API enabled, etc). Get into a cloud shell or local `kubectl` session
-* Create the cluster and default node pool: `gcloud beta container --project "teralivekubernetes" clusters create "ttf-cluster" --zone "us-east1-d"  --machine-type "e2-highmem-2" --disk-size "50" --num-nodes "2" --enable-autoscaling --total-min-nodes "2" --total-max-nodes "6" --location-policy "ANY" --enable-autoupgrade --enable-autorepair --autoscaling-profile optimize-utilization --node-locations "us-east1-d"`
-* Create a secondary node pool that starts empty (read below for more details): `gcloud beta container --project "teralivekubernetes" node-pools create "heavy-builder-pool" --cluster "ttf-cluster" --zone "us-east1-d"  --machine-type "e2-standard-4" --disk-size "50" --node-labels builder=heavy --node-taints heavy-builder-only=true:NoSchedule --num-nodes "0" --enable-autoscaling --total-min-nodes "0" --total-max-nodes "3" --location-policy "ANY" --enable-autoupgrade --enable-autorepair`
+* Create the cluster and default node pool:
+
+```
+gcloud beta container --project "teralivekubernetes" clusters create "ttf-cluster" \
+    --zone "us-east1-d" \
+    --machine-type "e2-highmem-2" \
+    --disk-size "50" \
+    --num-nodes "2" \
+    --enable-autoscaling \
+    --total-min-nodes "2" \
+    --total-max-nodes "6" \
+    --location-policy "ANY" \
+    --enable-autoupgrade \
+    --enable-autorepair \
+    --autoscaling-profile optimize-utilization \
+    --node-locations "us-east1-d" \
+    --enable-legacy-authorization # Enable legacy authorization (we likely have old stuff needing it)
+```
+
+* Create a secondary node pool that starts empty (read below for more details):
+
+```
+gcloud beta container --project "teralivekubernetes" node-pools create "heavy-builder-pool" \
+    --cluster "ttf-cluster" \
+    --zone "us-east1-d" \
+    --machine-type "e2-standard-4" \
+    --disk-size "50" \
+    --node-labels builder=heavy \
+    --node-taints heavy-builder-only=true:NoSchedule \
+    --num-nodes "0" \
+    --enable-autoscaling \
+    --total-min-nodes "0" \
+    --total-max-nodes "3" \
+    --location-policy "ANY" \
+    --enable-autoupgrade \
+    --enable-autorepair
+```
 
 #### Node pools
 
