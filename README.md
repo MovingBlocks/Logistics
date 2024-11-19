@@ -99,7 +99,7 @@ See the individual directories for more technical details on each topic - this p
   * You may have to wait a bit here depending on the mood of DNS replication and/or try in a new browser or incognito mode, maybe after running something like `ipconfig /flushdns`
 1. Verify that `https://argocd.[yourdomain]` pulls up, log in with `admin` to validate further (see dedicated readme) (you'll have to OK an invalid cert - plain http will hit a redirect loop on login)
   * Get the password with `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo` (works readily within a Google Cloud Shell, less so on Windows)
-1. With the domain confirmed go edit `argocd/templates/argocd-ingress.yaml` and comment out the `letsencrypt-staging` line in favor of the `letsencrypt-prod` line to allow Lets Encrypt to pull a fully valid certificate next try. Commit & push to Git.
+1. With the domain confirmed go edit `argocd/templates/ingress-argocd.yaml` and comment out the `letsencrypt-staging` line in favor of the `letsencrypt-prod` line to allow Lets Encrypt to pull a fully valid certificate next try. Commit & push to Git.
   * Naturally if we've already done that this repo will show current state not the pristine ready to work from scratch state - if redoing you'll have to swap from prod back to stage first.
   * Swapping the TLS config between Stage and Prod may go weird if Kubernetes tries to "reuse" part of the secrets. Applying in Argo may be enough to reset this properly? Seems to be ...
 1. Click the button to synchronize Argo CD _inside_ Argo CD - yep it manages itself! You may get funny behavior for a moment as Argo redeploys itself.
