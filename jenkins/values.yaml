@@ -56,12 +56,12 @@ jenkins:
         value: "-Dcasc.reload.token=terajenkins-0 -Dpermissive-script-security.enabled=no_security"
     ingress:
       enabled: true
-      hostName: jenkins.terasology.io
-      resourceRootUrl: content.terasology.io
+      hostName: jenkins.nanoware.us
+      resourceRootUrl: content.nanoware.us
       tls:
       - hosts:
-        - jenkins.terasology.io
-        - content.terasology.io
+        - jenkins.nanoware.us
+        - content.nanoware.us
         secretName: jenkins-tls-secret
       annotations:
         cert-manager.io/cluster-issuer: "letsencrypt-prod"
