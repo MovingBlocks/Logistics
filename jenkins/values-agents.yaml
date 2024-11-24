@@ -5,7 +5,7 @@ jenkins:
       containerCap: 10
       containerCapStr: "10"
 
-      podTemplates:
+      templates:
 
         # Our Kaniko pre-cached Java builders handle the bulk of agent requests (primary TS and DS jobs) at various JDK levels
         # Some builds (engine usually) have spiked as high as 4 CPU and 10 GB memory - we used to have module specific light builders, possible good TODO to repeat
