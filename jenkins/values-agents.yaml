@@ -23,13 +23,10 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                    resources:
-                      requests:
-                        cpu: 1250m
-                        memory: "6144Mi"
-                      limits:
-                        cpu: 1750m
-                        memory: "8192Mi"
+                      resourceRequestCpu: "1250m"
+                      resourceRequestMemory: "6144Mi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "8192Mi"
 
                   - name: "kaniko-precached-jdk8"
                     label: "kaniko-precached-jdk8"
@@ -40,13 +37,10 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                    resources:
-                      requests:
-                        cpu: 1250m
-                        memory: "6144Mi"
-                      limits:
-                        cpu: 1750m
-                        memory: "8192Mi"
+                      resourceRequestCpu: "1250m"
+                      resourceRequestMemory: "6144Mi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "8192Mi"
 
                   - name: "kaniko-precached-jdk17"
                     label: "kaniko-precached-jdk17 ts-engine ts-module heavy java17"
@@ -57,13 +51,10 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                    resources:
-                      requests:
-                        cpu: 1250m
-                        memory: "6144Mi"
-                      limits:
-                        cpu: 1750m
-                        memory: "8192Mi"
+                      resourceRequestCpu: "1250m"
+                      resourceRequestMemory: "6144Mi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "8192Mi"
 
                   # For native builds of some of our libraries
                   - name: "java-native"
@@ -75,13 +66,10 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                    resources:
-                      requests:
-                        cpu: 1250m
-                        memory: "6144Mi"
-                      limits:
-                        cpu: 1750m
-                        memory: "8192Mi"
+                      resourceRequestCpu: "1250m"
+                      resourceRequestMemory: "6144Mi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "8192Mi"
 
                   # This was for experimental k8s utility and may not be needed with the dind agent - although it may be nice to have a non-priv kubectl agent?
                   - name: "kubectl-agent-experimental"
@@ -93,13 +81,10 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                      resources:
-                        requests:
-                          cpu: 250m
-                          memory: "2048Mi"
-                        limits:
-                          cpu: 750m
-                          memory: "4096Mi"
+                      resourceRequestCpu: "250m"
+                      resourceRequestMemory: "2048Mi"
+                      resourceLimitCpu: "750m"
+                      resourceLimitMemory: "4096Mi"
 
                   # For our module site and other web stuff
                   - name: "python-agent"
@@ -111,13 +96,10 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                      resources:
-                        requests:
-                          cpu: 250m
-                          memory: "2048Mi"
-                        limits:
-                          cpu: 750m
-                          memory: "4096Mi"
+                      resourceRequestCpu: "250m"
+                      resourceRequestMemory: "2048Mi"
+                      resourceLimitCpu: "750m"
+                      resourceLimitMemory: "4096Mi"
 
                   # Android builds for Gestalt and Destination Sol
                   - name: "android-agent"
@@ -129,13 +111,10 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                    resources:
-                      requests:
-                        cpu: 1250m
-                        memory: "6144Mi"
-                      limits:
-                        cpu: 1750m
-                        memory: "8192Mi"
+                      resourceRequestCpu: "1250m"
+                      resourceRequestMemory: "6144Mi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "8192Mi"
 
                   # For building our own custom Docker images
                   - name: "kaniko"
@@ -146,13 +125,10 @@ jenkins:
                       image: "gcr.io/kaniko-project/executor:debug"
                       command: "/busybox/sleep"
                       args: "infinity"
-                      resources:
-                        requests:
-                          cpu: 256m
-                          memory: "4Gi"
-                        limits:
-                          cpu: 900m
-                          memory: "8Gi"
+                      resourceRequestCpu: "250m"
+                      resourceRequestMemory: "4Gi"
+                      resourceLimitCpu: "900m"
+                      resourceLimitMemory: "8Gi"
 
                   # For Backstage, utility Kubernetes, etc
                   - name: "jenkins-agent-dind"
@@ -165,10 +141,7 @@ jenkins:
                       #args: []     # Or include any args
                       securityContext:
                         privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
-                      resources:
-                        requests:
-                          cpu: 250m
-                          memory: "2048Mi"
-                        limits:
-                          cpu: 750m
-                          memory: "4096Mi"
+                      resourceRequestCpu: "250m"
+                      resourceRequestMemory: "2048Mi"
+                      resourceLimitCpu: "750m"
+                      resourceLimitMemory: "4096Mi"
