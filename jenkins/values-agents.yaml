@@ -1,161 +1,165 @@
-jenkins:
-  clouds:
-  - kubernetes:
-      name: "kuberneteswololo"
-      containerCap: 10
-      containerCapStr: "10"
+controller:
+  JCasC:
+    configScripts:
+      agents: |
+        jenkins:
+          clouds:
+          - kubernetes:
+              name: "kuberneteswololo"
+              containerCap: 10
+              containerCapStr: "10"
 
-      templates:
+              templates:
 
-        # Our Kaniko pre-cached Java builders handle the bulk of agent requests (primary TS and DS jobs) at various JDK levels
-        # Some builds (engine usually) have spiked as high as 4 CPU and 10 GB memory - we used to have module specific light builders, possible good TODO to repeat
-        - name: "kaniko-precached-jdk11"
-          label: "kaniko-precached-jdk11 ts-engine ts-module lib heavy light java11 light-java"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: builder
-            image: "terasology/jenkins-precached-agent:latest-jdk11"
-            command: ["/bin/sh", "-c", "cat"]
-            ttyEnabled: true
-          resources:
-            requests:
-              cpu: 1250m
-              memory: "6144Mi"
-            limits:
-              cpu: 1750m
-              memory: "8192Mi"
+                # Our Kaniko pre-cached Java builders handle the bulk of agent requests (primary TS and DS jobs) at various JDK levels
+                # Some builds (engine usually) have spiked as high as 4 CPU and 10 GB memory - we used to have module specific light builders, possible good TODO to repeat
+                - name: "kaniko-precached-jdk11"
+                  label: "kaniko-precached-jdk11 ts-engine ts-module lib heavy light java11 light-java"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: builder
+                    image: "terasology/jenkins-precached-agent:latest-jdk11"
+                    command: ["/bin/sh", "-c", "cat"]
+                    ttyEnabled: true
+                  resources:
+                    requests:
+                      cpu: 1250m
+                      memory: "6144Mi"
+                    limits:
+                      cpu: 1750m
+                      memory: "8192Mi"
 
-        - name: "kaniko-precached-jdk8"
-          label: "kaniko-precached-jdk8"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: builder
-            image: "terasology/jenkins-precached-agent:latest-jdk8"
-            command: ["/bin/sh", "-c", "cat"]
-            ttyEnabled: true
-          resources:
-            requests:
-              cpu: 1250m
-              memory: "6144Mi"
-            limits:
-              cpu: 1750m
-              memory: "8192Mi"
+                - name: "kaniko-precached-jdk8"
+                  label: "kaniko-precached-jdk8"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: builder
+                    image: "terasology/jenkins-precached-agent:latest-jdk8"
+                    command: ["/bin/sh", "-c", "cat"]
+                    ttyEnabled: true
+                  resources:
+                    requests:
+                      cpu: 1250m
+                      memory: "6144Mi"
+                    limits:
+                      cpu: 1750m
+                      memory: "8192Mi"
 
-        - name: "kaniko-precached-jdk17"
-          label: "kaniko-precached-jdk17 ts-engine ts-module heavy java17"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: builder
-            image: "terasology/jenkins-precached-agent:latest-jdk17"
-            command: ["/bin/sh", "-c", "cat"]
-            ttyEnabled: true
-          resources:
-            requests:
-              cpu: 1250m
-              memory: "6144Mi"
-            limits:
-              cpu: 1750m
-              memory: "8192Mi"
+                - name: "kaniko-precached-jdk17"
+                  label: "kaniko-precached-jdk17 ts-engine ts-module heavy java17"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: builder
+                    image: "terasology/jenkins-precached-agent:latest-jdk17"
+                    command: ["/bin/sh", "-c", "cat"]
+                    ttyEnabled: true
+                  resources:
+                    requests:
+                      cpu: 1250m
+                      memory: "6144Mi"
+                    limits:
+                      cpu: 1750m
+                      memory: "8192Mi"
 
-        # For native builds of some of our libraries
-        - name: "java-native"
-          label: "java-native"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: builder
-            image: "terasology/java-native-jnlp:latest"
-            command: ["/bin/sh", "-c", "cat"]
-            ttyEnabled: true
-          resources:
-            requests:
-              cpu: 1250m
-              memory: "6144Mi"
-            limits:
-              cpu: 1750m
-              memory: "8192Mi"
+                # For native builds of some of our libraries
+                - name: "java-native"
+                  label: "java-native"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: builder
+                    image: "terasology/java-native-jnlp:latest"
+                    command: ["/bin/sh", "-c", "cat"]
+                    ttyEnabled: true
+                  resources:
+                    requests:
+                      cpu: 1250m
+                      memory: "6144Mi"
+                    limits:
+                      cpu: 1750m
+                      memory: "8192Mi"
 
-        # This was for experimental k8s utility and may not be needed with the dind agent - although it may be nice to have a non-priv kubectl agent?
-        - name: "kubectl-agent-experimental"
-          label: "java-native"  # Note: Same label as "java-native" agent
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: builder
-            image: "cervator/pre-cached-jenkins-agent:experimental"
-            command: ["/bin/sh", "-c", "cat"]
-            ttyEnabled: true
-            resources:
-              requests:
-                cpu: 250m
-                memory: "2048Mi"
-              limits:
-                cpu: 750m
-                memory: "4096Mi"
+                # This was for experimental k8s utility and may not be needed with the dind agent - although it may be nice to have a non-priv kubectl agent?
+                - name: "kubectl-agent-experimental"
+                  label: "java-native"  # Note: Same label as "java-native" agent
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: builder
+                    image: "cervator/pre-cached-jenkins-agent:experimental"
+                    command: ["/bin/sh", "-c", "cat"]
+                    ttyEnabled: true
+                    resources:
+                      requests:
+                        cpu: 250m
+                        memory: "2048Mi"
+                      limits:
+                        cpu: 750m
+                        memory: "4096Mi"
 
-        # For our module site and other web stuff
-        - name: "python-agent"
-          label: "python"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: builder
-            image: "terasology/modulesite:latest"
-            command: ["/bin/sh", "-c", "cat"]
-            ttyEnabled: true
-            resources:
-              requests:
-                cpu: 250m
-                memory: "2048Mi"
-              limits:
-                cpu: 750m
-                memory: "4096Mi"
+                # For our module site and other web stuff
+                - name: "python-agent"
+                  label: "python"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: builder
+                    image: "terasology/modulesite:latest"
+                    command: ["/bin/sh", "-c", "cat"]
+                    ttyEnabled: true
+                    resources:
+                      requests:
+                        cpu: 250m
+                        memory: "2048Mi"
+                      limits:
+                        cpu: 750m
+                        memory: "4096Mi"
 
-        # Android builds for Gestalt and Destination Sol
-        - name: "android-agent"
-          label: "android"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: builder
-            image: "terasology/jenkins-android-agent:latest"
-            command: ["/bin/sh", "-c", "cat"]
-            ttyEnabled: true
-          resources:
-            requests:
-              cpu: 1250m
-              memory: "6144Mi"
-            limits:
-              cpu: 1750m
-              memory: "8192Mi"
+                # Android builds for Gestalt and Destination Sol
+                - name: "android-agent"
+                  label: "android"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: builder
+                    image: "terasology/jenkins-android-agent:latest"
+                    command: ["/bin/sh", "-c", "cat"]
+                    ttyEnabled: true
+                  resources:
+                    requests:
+                      cpu: 1250m
+                      memory: "6144Mi"
+                    limits:
+                      cpu: 1750m
+                      memory: "8192Mi"
 
-        # For building our own custom Docker images
-        - name: "kaniko"
-          label: "kaniko"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: kaniko  # Using "kaniko" as the container name
-            image: "gcr.io/kaniko-project/executor:debug"
-            command: ["/busybox/sleep", "infinity"]
-            resources:
-              requests:
-                cpu: 256m
-                memory: "4Gi"
-              limits:
-                cpu: 900m
-                memory: "8Gi"
+                # For building our own custom Docker images
+                - name: "kaniko"
+                  label: "kaniko"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: kaniko  # Using "kaniko" as the container name
+                    image: "gcr.io/kaniko-project/executor:debug"
+                    command: ["/busybox/sleep", "infinity"]
+                    resources:
+                      requests:
+                        cpu: 256m
+                        memory: "4Gi"
+                      limits:
+                        cpu: 900m
+                        memory: "8Gi"
 
-        # For Backstage, utility Kubernetes, etc
-        - name: "jenkins-agent-dind"
-          label: "docker kubectl node20"
-          nodeUsageMode: "EXCLUSIVE"
-          containers:
-          - name: jnlp  # Use "jnlp" as the container name as this image relies on its own Jenkins config
-            image: "ghcr.io/felipecrs/jenkins-agent-dind:20231229"
-            command: []  # Don't run any command
-            args: []     # Or include any args
-            securityContext:
-              privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
-            resources:
-              requests:
-                cpu: 250m
-                memory: "2048Mi"
-              limits:
-                cpu: 750m
-                memory: "4096Mi"
+                # For Backstage, utility Kubernetes, etc
+                - name: "jenkins-agent-dind"
+                  label: "docker kubectl node20"
+                  nodeUsageMode: "EXCLUSIVE"
+                  containers:
+                  - name: jnlp  # Use "jnlp" as the container name as this image relies on its own Jenkins config
+                    image: "ghcr.io/felipecrs/jenkins-agent-dind:20231229"
+                    command: []  # Don't run any command
+                    args: []     # Or include any args
+                    securityContext:
+                      privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
+                    resources:
+                      requests:
+                        cpu: 250m
+                        memory: "2048Mi"
+                      limits:
+                        cpu: 750m
+                        memory: "4096Mi"
