@@ -21,8 +21,6 @@ To experiment with a new/temporary one consider creating a new OAuth application
 
 For the sake of local development ease you can use `jenkins-secret-do-not-recomment.yaml` to prepare the secrets for Kubernetes, just enter the right values as instructed by comments and run `kubectl apply -f jenkins-secret-do-not-recommit.yaml -n jenkins` - you may need to create the namespace first. HOWEVER you do of course not want to commit the actual values, and we should aim to use proper external secrets manager like Vault or some Argo-flavored thing (which does also have a plugin for Vault)
 
-Note that the secret added there is for OAuth and would live GitHub-side at https://github.com/organizations/MovingBlocks/settings/applications/132034
-
 ## GitHub API via GitHub App
 
 Jenkins can have increased access to the GitHub API by authenticating as a _GitHub App._ - and the setup can be reused between Jenkins builds, just may have to generate a new secret on the existing app.

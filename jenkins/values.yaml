@@ -10,8 +10,9 @@ jenkins:
 
   # Stuff for the main server - see other values files for more specific stuff
   controller:
-    image: "jenkins/jenkins"
-    tag: "2.479.1-lts"
+    image:
+      repository: "jenkins/jenkins"
+      tag: "2.479.1-lts"
     resources:
       requests:
         cpu: "250m"
