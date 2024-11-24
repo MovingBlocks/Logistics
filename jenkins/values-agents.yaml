@@ -139,8 +139,7 @@ jenkins:
                       image: "ghcr.io/felipecrs/jenkins-agent-dind:20231229"
                       #command: []  # Don't run any command
                       #args: []     # Or include any args
-                      securityContext:
-                        privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
+                      privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
                       resourceRequestCpu: "250m"
                       resourceRequestMemory: "2048Mi"
                       resourceLimitCpu: "750m"
