@@ -16,6 +16,29 @@ If debugging for development reasons you can work via Helm CLI manually, rather 
 
 Jenkins works best on SSD, even the controller, especially when it comes to dealing with lots of little files involved in analytics uploading and so forth. An extra storage class is set up via pre-install Helm hook in `pre-install-ssd-storage-class.yaml` and that in turn is used in the main `values.yaml`
 
+## Plugins
+
+Some commentary here on the non-obvious plugins we use
+
+* Job DSL plugin - powers automagic job creation (possibly could wire in better with JCasC sometime as well?)
+* Templating Engine - powers the module mega-builds (centralized Jenkinsfiles and such)
+* Discord Notifier - Used for the DestSol channel, but nothing else yet. May want to either expand or eliminate
+* Copy Artifact - used to copy in the "build harness" for Terasology module builds (files attached like artifacts to the engine jobs)
+* Permissive Script Security - we hatesss it, preciousss - but we must have it, so at least make it less painful... avoids some obnoxious security features, but not all. Newer Jenkins may at least allow you to pre-approve if you're editing a Groovy-related
+* Basic Branch Build Strategies Plugin - allows extra config for when to build things, like tags
+* Groovy - for executing system Groovy steps to aid maintenance of Jenkins itself
+* https://plugins.jenkins.io/git-forensics/ (used by the engine build)
+* https://plugins.jenkins.io/pipeline-gitstatuswrapper/ (used by the module build)
+* Thinbackup - for backup and restore to another Jenkins. Was used experimentally but may not be good enough to keep
+* Kubernetes - pretty much default for a nice Jenkins nowadays, lets you easily make agents that run inside the cluster Jenkins lives in
+* GitHub Checks - for analytics on GitHub
+* HTML Publisher - can publish HTML in some fashion but forgot what uses it!
+* HTTP Request - could be used in automation to hit REST endpoints and such. Unsure how needed nowadays
+* Kubernetes Credentials Provider - may or may not be in use or have been experimental in the past? Used for hitting Kubernetes in non-native agent ways?
+* Label Linked Jobs - don't really remember, alas!
+* Pipeline Utility Steps - probably in use somewhere
+* GitHub Authentication - pretty central as it is our auth approach _but_ we might eventually replace that with Keycloak or so ..
+
 ## JCasC
 
 We use a recommended approach from the official Helm image to [split config-as-code into multiple files](https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/README.md#breaking-out-large-config-as-code-scripts) which then originate from multiple Helm values files.
