@@ -20,7 +20,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-precached-agent:latest-jdk11"
-                      command: ["/bin/sh", "-c", "cat"]
+                      command: "/bin/sh -c"
+                      args: "cat"
                       ttyEnabled: true
                     resources:
                       requests:
@@ -36,7 +37,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-precached-agent:latest-jdk8"
-                      command: ["/bin/sh", "-c", "cat"]
+                      command: "/bin/sh -c"
+                      args: "cat"
                       ttyEnabled: true
                     resources:
                       requests:
@@ -52,7 +54,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-precached-agent:latest-jdk17"
-                      command: ["/bin/sh", "-c", "cat"]
+                      command: "/bin/sh -c"
+                      args: "cat"
                       ttyEnabled: true
                     resources:
                       requests:
@@ -69,7 +72,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/java-native-jnlp:latest"
-                      command: ["/bin/sh", "-c", "cat"]
+                      command: "/bin/sh -c"
+                      args: "cat"
                       ttyEnabled: true
                     resources:
                       requests:
@@ -86,7 +90,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "cervator/pre-cached-jenkins-agent:experimental"
-                      command: ["/bin/sh", "-c", "cat"]
+                      command: "/bin/sh -c"
+                      args: "cat"
                       ttyEnabled: true
                       resources:
                         requests:
@@ -103,7 +108,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/modulesite:latest"
-                      command: ["/bin/sh", "-c", "cat"]
+                      command: "/bin/sh -c"
+                      args: "cat"
                       ttyEnabled: true
                       resources:
                         requests:
@@ -120,7 +126,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-android-agent:latest"
-                      command: ["/bin/sh", "-c", "cat"]
+                      command: "/bin/sh -c"
+                      args: "cat"
                       ttyEnabled: true
                     resources:
                       requests:
@@ -137,7 +144,8 @@ jenkins:
                     containers:
                     - name: kaniko  # Using "kaniko" as the container name
                       image: "gcr.io/kaniko-project/executor:debug"
-                      command: ["/busybox/sleep", "infinity"]
+                      command: "/busybox/sleep"
+                      args: "infinity"
                       resources:
                         requests:
                           cpu: 256m
@@ -153,8 +161,8 @@ jenkins:
                     containers:
                     - name: jnlp  # Use "jnlp" as the container name as this image relies on its own Jenkins config
                       image: "ghcr.io/felipecrs/jenkins-agent-dind:20231229"
-                      command: []  # Don't run any command
-                      args: []     # Or include any args
+                      #command: []  # Don't run any command
+                      #args: []     # Or include any args
                       securityContext:
                         privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
                       resources:
