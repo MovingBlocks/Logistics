@@ -6,7 +6,7 @@ jenkins:
           jenkins:
             clouds:
             - kubernetes:
-                name: "kuberneteswololo"
+                name: "kubernetes"
                 containerCap: 10
                 containerCapStr: "10"
 
