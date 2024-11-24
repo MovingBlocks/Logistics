@@ -11,7 +11,7 @@ jenkins:
   # Stuff for the main server - see other values files for more specific stuff
   controller:
     image: "jenkins/jenkins"
-    tag: "2.414.1-lts"
+    tag: "2.479.1-lts"
     resources:
       requests:
         cpu: "250m"
@@ -22,7 +22,7 @@ jenkins:
     jenkinsAdminEmail: terasology@gmail.com
     numExecutors: 1
     executorMode: EXCLUSIVE
-    customJenkinsLabels: "main"
+    customJenkinsLabels: "main master built-in"
     initScripts:
       disableCli: |-
         def removal = { lst ->

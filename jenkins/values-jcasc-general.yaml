@@ -4,7 +4,7 @@ jenkins:
       configScripts:
         general: |
           jenkins:
-            systemMessage: Welcome to the 2020ies via JCasC! Now with 20% more JCasC.
+            systemMessage: Somehow Jenkins remains eternal. Now with fancier node pools!
             securityRealm:
               github:
                 githubWebUri: "https://github.com"
@@ -14,7 +14,7 @@ jenkins:
                 oauthScopes: "read:user,user:email"
             authorizationStrategy:
               github:
-                adminUserNames: "Cervator, cervator, immortius, skaldarnar, Josharias, msteiger, qwc, rzats, nihal111, oniatus, jellysnake, pollend, majordwarf, Qwertygiy, Avalancs, casals, DarkWeird, SimonC4, NicholasBatesNZ, jdrueckert, e-aakash, keturn, BenjaminAmos, me0wster, TosinDevOps"
+                adminUserNames: "Cervator, cervator, immortius, skaldarnar, Josharias, msteiger, qwc, rzats, nihal111, oniatus, jellysnake, pollend, majordwarf, Qwertygiy, Avalancs, casals, DarkWeird, SimonC4, NicholasBatesNZ, jdrueckert, e-aakash, keturn, BenjaminAmos, soloturn"
                 allowAnonymousJobStatusPermission: true
                 allowAnonymousReadPermission: true
                 allowCcTrayPermission: false

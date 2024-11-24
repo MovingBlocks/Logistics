@@ -11,7 +11,9 @@ Deployment of Jenkins and about everything else is done using Helm. See https://
 
 ## GitHub OAuth
 
-Create a new OAuth application in a place like https://github.com/organizations/Terasology/settings/applications and write down the client id and secret.
+The "live" https://jenkins.terasology.io instance is paired with https://github.com/organizations/MovingBlocks/settings/applications/132034
+
+To experiment with a new/temporary one consider creating a new OAuth application in a place like https://github.com/organizations/Terasology/settings/applications and write down the client id and secret.
 
 * Homepage URL should be something like https://jenkins.terasology.io
 * Make sure the Authorization callback URL is something like https://jenkins.terasology.io/securityRealm/finishLogin
@@ -59,7 +61,7 @@ Jenkins has built up a lot of credentials over the years, and all the original i
 * (Username with password) user and id `GooeyHub` the GitHub user - used as our primary robot account for anything automation.
 * (Secret text) id `GooeyHubAccessToken` with the personal access token for GooeyHub again (different credential types may be needed in some contexts)
 * (Username with password) user `gooeyhub` on Docker Hub with id `docker-hub-terasology-token`
-* (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via servevr settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
+* (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via server settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
   * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there
 
 ## More config
