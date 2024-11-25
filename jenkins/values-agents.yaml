@@ -23,7 +23,7 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                      resourceRequestCpu: "1250m"
+                      resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
@@ -37,7 +37,7 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                      resourceRequestCpu: "1250m"
+                      resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
@@ -51,7 +51,7 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                      resourceRequestCpu: "1250m"
+                      resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
@@ -66,7 +66,7 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                      resourceRequestCpu: "1250m"
+                      resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
@@ -111,7 +111,7 @@ jenkins:
                       command: "/bin/sh -c"
                       args: "cat"
                       ttyEnabled: true
-                      resourceRequestCpu: "1250m"
+                      resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
