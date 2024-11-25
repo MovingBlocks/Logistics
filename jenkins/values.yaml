@@ -20,6 +20,8 @@ jenkins:
       limits:
         cpu: "2000m"
         memory: "8Gi"
+    JCasC:
+      defaultConfig: false  # Disable the default JCasC configuration (don't want two Kubernetes clouds)
     jenkinsAdminEmail: terasology@gmail.com
     numExecutors: 1
     executorMode: EXCLUSIVE
