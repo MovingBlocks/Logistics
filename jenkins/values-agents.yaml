@@ -49,7 +49,6 @@ jenkins:
                       image: "terasology/jenkins-precached-agent:latest-jdk17"
                       command: "sleep"
                       args: "infinity"
-                      ttyEnabled: true
                       resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
