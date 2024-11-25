@@ -9,6 +9,7 @@ jenkins:
                 name: "kubernetes"
                 containerCap: 10
                 containerCapStr: "10"
+                websocket: true
 
                 templates:
 
@@ -20,9 +21,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-precached-agent:latest-jdk11"
-                      command: "/bin/sh -c"
-                      args: "cat"
-                      ttyEnabled: true
+                      command: "sleep"
+                      args: "infinity"
                       resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
@@ -34,9 +34,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-precached-agent:latest-jdk8"
-                      command: "/bin/sh -c"
-                      args: "cat"
-                      ttyEnabled: true
+                      command: "sleep"
+                      args: "infinity"
                       resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
@@ -48,8 +47,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-precached-agent:latest-jdk17"
-                      command: "/bin/sh -c"
-                      args: "cat"
+                      command: "sleep"
+                      args: "infinity"
                       ttyEnabled: true
                       resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
@@ -63,9 +62,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/java-native-jnlp:latest"
-                      command: "/bin/sh -c"
-                      args: "cat"
-                      ttyEnabled: true
+                      command: "sleep"
+                      args: "infinity"
                       resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
@@ -78,9 +76,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "cervator/pre-cached-jenkins-agent:experimental"
-                      command: "/bin/sh -c"
-                      args: "cat"
-                      ttyEnabled: true
+                      command: "sleep"
+                      args: "infinity"
                       resourceRequestCpu: "250m"
                       resourceRequestMemory: "2048Mi"
                       resourceLimitCpu: "750m"
@@ -93,9 +90,8 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/modulesite:latest"
-                      command: "/bin/sh -c"
-                      args: "cat"
-                      ttyEnabled: true
+                      command: "sleep"
+                      args: "infinity"
                       resourceRequestCpu: "250m"
                       resourceRequestMemory: "2048Mi"
                       resourceLimitCpu: "750m"
@@ -108,10 +104,9 @@ jenkins:
                     containers:
                     - name: builder
                       image: "terasology/jenkins-android-agent:latest"
-                      command: "/bin/sh -c"
-                      args: "cat"
-                      ttyEnabled: true
-                      resourceRequestCpu: "1"
+                      command: "sleep"
+                      args: "infinity"
+                      resourceRequestCpu: "1250m"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
@@ -136,9 +131,7 @@ jenkins:
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Use "jnlp" as the container name as this image relies on its own Jenkins config
-                      image: "ghcr.io/felipecrs/jenkins-agent-dind:20231229"
-                      #command: []  # Don't run any command
-                      #args: []     # Or include any args
+                      image: "ghcr.io/felipecrs/jenkins-agent-dind:2"
                       privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
                       resourceRequestCpu: "250m"
                       resourceRequestMemory: "2048Mi"
