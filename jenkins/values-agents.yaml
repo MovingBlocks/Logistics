@@ -13,7 +13,7 @@ jenkins:
 
                 templates:
 
-                  # Our Kaniko pre-cached Java builders handle the bulk of agent requests (primary TS and DS jobs) at various JDK levels
+                  # Our Kaniko-made pre-cached Java builders handle the bulk of agent requests (primary TS and DS jobs) at various JDK levels
                   # Some builds (engine usually) have spiked as high as 4 CPU and 10 GB memory - we used to have module specific light builders, possible good TODO to repeat
                   - name: "kaniko-precached-jdk11"
                     label: "kaniko-precached-jdk11 ts-engine ts-module lib heavy light java11 light-java"
@@ -68,20 +68,6 @@ jenkins:
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
 
-                  # This was for experimental k8s utility and may not be needed with the dind agent - although it may be nice to have a non-priv kubectl agent?
-                  - name: "kubectl-agent-experimental"
-                    label: "java-native"  # Note: Same label as "java-native" agent
-                    nodeUsageMode: "EXCLUSIVE"
-                    containers:
-                    - name: builder
-                      image: "cervator/pre-cached-jenkins-agent:experimental"
-                      command: "sleep"
-                      args: "infinity"
-                      resourceRequestCpu: "250m"
-                      resourceRequestMemory: "2048Mi"
-                      resourceLimitCpu: "750m"
-                      resourceLimitMemory: "4096Mi"
-
                   # For our module site and other web stuff
                   - name: "python-agent"
                     label: "python"
@@ -105,7 +91,7 @@ jenkins:
                       image: "terasology/jenkins-android-agent:latest"
                       command: "sleep"
                       args: "infinity"
-                      resourceRequestCpu: "1250m"
+                      resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"

@@ -117,6 +117,9 @@ If you see a *bunch* of failed builders the cluster may have maxed out. Either j
 ## Left to do
 
 * Add remaining build agents - done but not tested
+  * TODO: The Python image does work, as root, but Jenkins logs in as jenkins which gets no easy access to Python. Do we even need this agent? Probably an easy fix if so
+  * TODO: I removed the `kubectl-agent-experimental` agent as it was a minimal throwaway image I tinkered with, the newer DinD image has kubectl and other stuff. Could delete the repo/branch
+    * One minor advantage: this agent allowed usage of kubectl without being privileged with Docker ...
 * Fix https://docs.gradle.org/current/userguide/upgrading_version_7.html#abstractarchivetask_api_cleanup for the Omega job
 * More plugin considerations
   * maybe theme-manager - was on old server but unsure. Better icons plz ...
