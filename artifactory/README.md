@@ -28,3 +28,7 @@ All zips were uploaded to `/tmp` using `kubectl cp` to the new Artifactory pod i
 The system zip was unzipped and fed into a system-level import with default settings (including content and metadata, none of which was exported anyway) which restores old user accounts as well
 
 Each repository then was uploaded and extracted one by one which put files into `/tmp/repositories/<name>` which was then fed into a repository import with `<name>` of the repository picked manually (again not adjusting any checkboxes)
+
+## Artifactory migration 2024
+
+Oh hey here we are again already anyway. But luckily this time the updated version target is just something like 7.98.9 which is the same major version.
