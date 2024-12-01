@@ -51,16 +51,18 @@ Follow the [guide][github-app] to create Credentials of type **GitHub App**.
 
 The key generated from the GitHub application was included in this repo as `terasology-jenkins-io.github-app.private-key.pkcs8` in the format needed by Jenkins, that has been moved to a password safe.
 
+Note: For testing a new Jenkins the existing GitHub app can simply be used directly - it will work even with a test Jenkins at a different URL.
+
 ## Various secrets
 
 Jenkins has built up a lot of credentials over the years, and all the original instructions are in the https://github.com/MovingBlocks/InfraPlayground repo - for this rejuvenation attempt let us see how few we can get away with:
 
-* (Username with password) user `gooey` the Artifactory user (id `artifactory-gooey`)
-* (Username with password) user and id `GooeyHub` the GitHub user - used as our primary robot account for anything automation.
-* (Secret text) id `GooeyHubAccessToken` with the personal access token for GooeyHub again (different credential types may be needed in some contexts)
-* (Username with password) user `gooeyhub` on Docker Hub with id `docker-hub-terasology-token`
+* (Username with password) user `gooey` the Artifactory user (id `artifactory-gooey`) - "User/pass to publish things to Artifactory"
+* (Username with password) user and id `GooeyHub` the GitHub user - "Primary robot user/pass for anything GitHub".
+* (Secret text) id `GooeyHubAccessToken` with the personal access token for GooeyHub again (different credential types may be needed in some contexts) - "Primary robot token for anything GitHub".
+* (Username with password) user `gooeyhub` on Docker Hub with id `docker-hub-terasology-token` - "Docker hub user/pass"
 * (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via server settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
-  * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there
+  * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there. So description "Discord webhook for #destsol-auto"
 
 ## More config
 

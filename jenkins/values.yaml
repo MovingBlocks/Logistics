@@ -6,13 +6,13 @@ jenkins:
 
   persistence:
     storageClass: ssd
-    size: 200Gi
+    size: 75Gi
 
   # Stuff for the main server - see other values files for more specific stuff
   controller:
     image:
       repository: "jenkins/jenkins"
-      tag: "2.479.1-lts"
+      tag: "2.479.2-lts"
     resources:
       requests:
         cpu: "250m"
