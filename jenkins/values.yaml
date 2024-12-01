@@ -6,7 +6,7 @@ jenkins:
 
   persistence:
     storageClass: ssd
-    size: 75Gi
+    size: 200Gi
 
   # Stuff for the main server - see other values files for more specific stuff
   controller:
