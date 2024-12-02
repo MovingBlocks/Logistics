@@ -42,6 +42,29 @@ jenkins:
                       resourceLimitMemory: "8192Mi"
 
                   - name: "kaniko-precached-jdk17"
+                    label: "kaniko-precached-jdk17 ts-module heavy java17"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: builder
+                      image: "terasology/jenkins-precached-agent:latest-jdk17"
+                      command: "sleep"
+                      args: "infinity"
+                      resourceRequestCpu: "1"
+                      resourceRequestMemory: "6144Mi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "8192Mi"
+                    # Tolerate but do not require a node from the secondary node pool with more resources (toleration only)
+                    yaml: |
+                      apiVersion: v1
+                      kind: Pod
+                      spec:
+                        tolerations:
+                        - key: "heavy-builder-only"
+                          operator: "Equal"
+                          value: "true"
+                          effect: "NoSchedule"
+
+                  - name: "kaniko-precached-jdk17-engine"
                     label: "kaniko-precached-jdk17 ts-engine ts-module heavy java17"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
@@ -53,6 +76,18 @@ jenkins:
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
+                    # Require a node from the secondary node pool with more resources (toleration AND node label)
+                    yaml: |
+                      apiVersion: v1
+                      kind: Pod
+                      spec:
+                        nodeSelector:
+                          builder: heavier
+                        tolerations:
+                        - key: "heavy-builder-only"
+                          operator: "Equal"
+                          value: "true"
+                          effect: "NoSchedule"
 
                   # For native builds of some of our libraries
                   - name: "java-native"
