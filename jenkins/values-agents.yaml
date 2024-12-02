@@ -82,7 +82,7 @@ jenkins:
                       kind: Pod
                       spec:
                         nodeSelector:
-                          builder: heavier
+                          builder: heavy
                         tolerations:
                         - key: "heavy-builder-only"
                           operator: "Equal"
