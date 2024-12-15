@@ -116,6 +116,17 @@ Note that as the cluster auto-scales to fit more builders a few may fail with a 
 
 If you see a *bunch* of failed builders the cluster may have maxed out. Either just wait for the available build capacity to grind down the queue or consider whether the cluster needs a higher auto-scaling limit
 
+## Agents
+
+As of the late 2024 migration and upgrade the Jenkins agent configuration was converted entirely to use the JCasC approach. Additionally the newly added support for multiple k8s node pools was engaged via node labels and tolerances, with an initial example made of the primary Terasology build agent, split into two as follows:
+
+* The existing example had the `ts-engine` _Jenkins_ agent label removed, and a k8s tolerance for the heavier node pool added. This allows these generally module/misc building only agents to use either the standard nodes _or_ the heavy ones, but does not force use of the heavy pool. Whether they'll favor spinning up regular nodes or heavy ones when capacity is short is an open question and not bad either way
+* A cloned agent retained the `ts-engine` label and got both the tolerance and a new _k8s node selector_ forcing them to run solely on nodes from the heavy pool. As such they'd never run on the default nodes holding the long term services like the Jenkins controller itself
+
+The motivation here is to cause engine builds to spin up dedicated nodes that could hold two engine builds in parallel or possibly three module builds if optimized further - the new smaller default nodes _could_ hold one engine build at the most, if barely depending on how long term stuff has spread around, but considering how CPU intensive engine builds can get (up to a full 4 CPU) their impact would be better to isolate. Additionally this keeps the heavy nodes exclusive for short term build processes and makes sure to leave nothing on those nodes that need a longer life, and thus could cause those more expensive nodes to not scale down. Finally by leaving the tolerance (but not the selector) on other agents they _can_ use spare capacity on the heavy nodes for "lesser" builds, rather than necessarily spin up more default nodes while leaving capacity unused on the heavy nodes.
+
+Even deeper cost optimization would be doable via preemptible / spot instance nodes, that can be withdrawn on short notice. That would take some serious resillience configuration within Jenkinsfiles, however, with hooks to retry _some_ types of build steps if they fail due to being preempted, and likely more use of parallelism (think chunks of tests running on separate nodes). That's way more than we need right now, however, and just having one additional node pool with special agent setup to use that is enough to prove the potential if needed in the future.
+
 ## Left to do
 
 * Add remaining build agents - done but not tested

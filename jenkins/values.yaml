@@ -6,7 +6,7 @@ jenkins:
 
   persistence:
     storageClass: ssd
-    size: 200Gi
+    size: 75Gi
 
   # Stuff for the main server - see other values files for more specific stuff
   controller:
@@ -59,12 +59,12 @@ jenkins:
         value: "-Dcasc.reload.token=terajenkins-0 -Dpermissive-script-security.enabled=no_security"
     ingress:
       enabled: true
-      hostName: jenkins.nanoware.us
-      resourceRootUrl: content.nanoware.us
+      hostName: jenkins.terasology.io
+      resourceRootUrl: content.terasology.io
       tls:
       - hosts:
-        - jenkins.nanoware.us
-        - content.nanoware.us
+        - jenkins.terasology.io
+        - content.terasology.io
         secretName: jenkins-tls-secret
       annotations:
         cert-manager.io/cluster-issuer: "letsencrypt-prod"

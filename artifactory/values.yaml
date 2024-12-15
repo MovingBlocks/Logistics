@@ -3,10 +3,10 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
       artifactory: # Which in turn has an "artifactory" section. Yay.
         resources:
           requests:
-            memory: "5Gi"
-            cpu: "200m"
+            memory: "6Gi"
+            cpu: "125m"
           limits:
-            memory: "7Gi"
+            memory: "8Gi"
             cpu: "1"
         javaOpts:
           xms: "5g"
@@ -30,7 +30,7 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
         defaultBackend:
           enabled: false
         hosts:
-          - artifactory.nanoware.us
+          - artifactory.terasology.io
         routerPath: /
         artifactoryPath: /
         className: ""
@@ -50,4 +50,4 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
         tls:
         - secretName: artifactory-tls-secret
           hosts:
-            - artifactory.nanoware.us
+            - artifactory.terasology.io

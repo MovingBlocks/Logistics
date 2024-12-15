@@ -71,7 +71,7 @@ Example monthly costs (before discounts) in late 2024 during evaluation for `us-
 
 * $66 `e2-highmem-2` - default pool nodes (2 CPU, 16 GB)
 * $98 `e2-standard-4` - heavy builder nodes (4 CPU, 16 GB)
-* $179 `c3d-highmem-4` - strong CPU nodes (4 CPU, 32 GB) - enough to for instance run several ARK servers (the Genesis 2 map was brutal on CPU and could go beyond 16 GB RAM) along with who knows how many Terasology servers
+* $179 `c3d-highmem-4` - strong (higher core GHz) CPU nodes (4 CPU, 32 GB) - enough to for instance run several ARK servers (the Genesis 2 map was brutal on CPU and could go beyond 16 GB RAM) along with who knows how many Terasology servers
 
 Generally for the `E2` server types a 1 year committed discount takes off about 37% of the on-demand cost. 3 year would be 55% but is a long time.
 

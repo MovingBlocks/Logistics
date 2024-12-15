@@ -76,7 +76,7 @@ jenkins:
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
-                    # Require a node from the secondary node pool with more resources (toleration AND node label)
+                    # Require a node from the secondary node pool with more resources (toleration AND node selector)
                     yaml: |
                       apiVersion: v1
                       kind: Pod
