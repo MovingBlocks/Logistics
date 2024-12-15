@@ -21,12 +21,10 @@ jenkins:
         cpu: "2000m"
         memory: "8Gi"
     JCasC:
-      defaultConfig: false  # Disable the default JCasC configuration (don't want two Kubernetes clouds)
-    jenkinsAdminEmail: terasology@gmail.com
-    numExecutors: 1
-    executorMode: EXCLUSIVE
-    customJenkinsLabels: "main master built-in"
+      defaultConfig: false  # Disable the default JCasC configuration (don't want two Kubernetes clouds) - replacement config in values-jcasc-general.yaml
+    resourceRoot: "https://content.terasology.io/"
     initScripts:
+      # Security precaution - the CLI either is considered risky or we added this due to an announed vulnerability in the past and it still seems to work, maybe?
       disableCli: |-
         def removal = { lst ->
           lst.each { x -> if (x.getClass().name?.contains("CLIAction")) lst.remove(x) }

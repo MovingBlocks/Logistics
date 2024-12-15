@@ -5,6 +5,10 @@ jenkins:
         general: |
           jenkins:
             systemMessage: Somehow Jenkins remains eternal. Now with fancier node pools!
+            adminAddress: "terasology@gmail.com"
+            numExecutors: 1
+            mode: EXCLUSIVE
+            label: "main master built-in"
             securityRealm:
               github:
                 githubWebUri: "https://github.com"
