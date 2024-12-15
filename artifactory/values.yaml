@@ -3,10 +3,10 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
       artifactory: # Which in turn has an "artifactory" section. Yay.
         resources:
           requests:
-            memory: "6Gi"
+            memory: "5Gi"
             cpu: "125m"
           limits:
-            memory: "8Gi"
+            memory: "7Gi"
             cpu: "1"
         javaOpts:
           xms: "5g"
