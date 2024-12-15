@@ -5,10 +5,9 @@ jenkins:
         general: |
           jenkins:
             systemMessage: Somehow Jenkins remains eternal. Now with fancier node pools!
-            adminAddress: "terasology@gmail.com"
             numExecutors: 1
             mode: EXCLUSIVE
-            label: "main master built-in"
+            labelString: "main master built-in"
             securityRealm:
               github:
                 githubWebUri: "https://github.com"
@@ -27,3 +26,9 @@ jenkins:
                 authenticatedUserReadPermission: true
                 useRepositoryPermissions: false
                 organizationNames: "CervTest"
+          unclassified:
+            location:
+              adminAddress: "terasology@gmail.com"
+              url: "https://jenkins.terasology.io/"
+            resourceRoot:
+              url: "https://content.terasology.io/"
