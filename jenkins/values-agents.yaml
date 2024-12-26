@@ -49,10 +49,10 @@ jenkins:
                       image: "terasology/jenkins-precached-agent:latest-jdk17"
                       command: "sleep"
                       args: "infinity"
-                      resourceRequestCpu: "1"
-                      resourceRequestMemory: "6144Mi"
+                      resourceRequestCpu: "800m"
+                      resourceRequestMemory: "2.5Gi"
                       resourceLimitCpu: "1750m"
-                      resourceLimitMemory: "8192Mi"
+                      resourceLimitMemory: "5Gi"
                     # Tolerate but do not require a node from the secondary node pool with more resources (toleration only)
                     yaml: |
                       apiVersion: v1
@@ -126,8 +126,8 @@ jenkins:
                       image: "terasology/jenkins-android-agent:latest"
                       command: "sleep"
                       args: "infinity"
-                      resourceRequestCpu: "1"
-                      resourceRequestMemory: "6144Mi"
+                      resourceRequestCpu: "850m"
+                      resourceRequestMemory: "5120Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
 
@@ -136,7 +136,7 @@ jenkins:
                     label: "kaniko"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
-                    - name: kaniko  # Using "kaniko" as the container name
+                    - name: kaniko
                       image: "gcr.io/kaniko-project/executor:debug"
                       command: "/busybox/sleep"
                       args: "infinity"
@@ -145,15 +145,29 @@ jenkins:
                       resourceLimitCpu: "900m"
                       resourceLimitMemory: "8Gi"
 
-                  # For Backstage, utility Kubernetes, etc
+                  # For Backstage and Docker stuff
                   - name: "jenkins-agent-dind"
-                    label: "docker kubectl node20"
+                    label: "docker node20"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Use "jnlp" as the container name as this image relies on its own Jenkins config
-                      image: "ghcr.io/felipecrs/jenkins-agent-dind:2"
+                      image: "ghcr.io/felipecrs/jenkins-agent-dind:sha-56f739d"
                       privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
                       resourceRequestCpu: "250m"
                       resourceRequestMemory: "2048Mi"
                       resourceLimitCpu: "750m"
+                      resourceLimitMemory: "4096Mi"
+
+                  # For utility Kubernetes - above suddenly couldn't find kubectl anymore, this has somewhat too many other things and may be unmaintained
+                  - name: "jenkins-agent-kubectl"
+                    label: "kubectl"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: builder
+                      image: "tfgco/kubectl:2.5.2"
+                      command: "sleep"
+                      args: "infinity"
+                      resourceRequestCpu: "125m"
+                      resourceRequestMemory: "2048Mi"
+                      resourceLimitCpu: "250m"
                       resourceLimitMemory: "4096Mi"

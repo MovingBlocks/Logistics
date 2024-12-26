@@ -26,6 +26,9 @@ jenkins:
                 authenticatedUserReadPermission: true
                 useRepositoryPermissions: false
                 organizationNames: "CervTest"
+            appearance:
+              themeManager:
+                theme: "dark"
           unclassified:
             location:
               adminAddress: "terasology@gmail.com"

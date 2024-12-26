@@ -41,9 +41,9 @@ Follow the [guide][github-app] to create Credentials of type **GitHub App**.
 + The **App Id** is `100575` (visible on the [app's settings page](https://github.com/organizations/MovingBlocks/settings/apps/terasology-jenkins-io)).
 + Do open the *Advanced* options when setting up these credentials and fill in the **Owner** field.
   - We need to create one Credentials entry for each GitHub Organization we operate on. These may use the same App ID and secret, but set different Owners.
-    * [ ] owner=`MovingBlocks`, id=`github-app-terasology-jenkins-io`
-    * [ ] owner=`Terasology`, id=`gh-app-terasology`
-    * [ ] owner=`Nanoware`, id=`gh-app-nanoware`
+    * [ ] owner=`MovingBlocks`, id=`github-app-terasology-jenkins-io`, description `GitHub App auth for MovingBlocks org`
+    * [ ] owner=`Terasology`, id=`gh-app-terasology`, description `GitHub App auth for Terasology org`
+    * [ ] owner=`Nanoware`, id=`gh-app-nanoware`, description `GitHub App auth for Nanoware org`
   - (This is true of August 2021. Check [JENKINS-62220](https://issues.jenkins.io/browse/JENKINS-62220) to see if they've fixed things to require less duplication. Later update: They did, but need to figure out what needs to change before updating the setup and this documentation, if we should even bother)
   - The `id` strings are used by the JobDSL scripts.
 
@@ -55,26 +55,28 @@ Note: For testing a new Jenkins the existing GitHub app can simply be used direc
 
 ## Various secrets
 
-Jenkins has built up a lot of credentials over the years, and all the original instructions are in the https://github.com/MovingBlocks/InfraPlayground repo - for this rejuvenation attempt let us see how few we can get away with:
+Jenkins has built up a lot of credentials over the years, and all the original instructions are in the https://github.com/MovingBlocks/InfraPlayground repo - for this rejuvenation attempt let us see how few we can get away with (passwords can be found in a password safe somewhere or the old repo):
 
-* (Username with password) user `gooey` the Artifactory user (id `artifactory-gooey`) - "User/pass to publish things to Artifactory"
-* (Username with password) user and id `GooeyHub` the GitHub user - "Primary robot user/pass for anything GitHub".
+* (Username with password) user `gooey` and id `artifactory-gooey` for the Artifactory user with description "User/pass to publish things to Artifactory"
+* (Username with password) user and id `GooeyHub` the main GitHub user - "Primary robot user/pass for anything GitHub".
 * (Secret text) id `GooeyHubAccessToken` with the personal access token for GooeyHub again (different credential types may be needed in some contexts) - "Primary robot token for anything GitHub".
 * (Username with password) user `gooeyhub` on Docker Hub with id `docker-hub-terasology-token` - "Docker hub user/pass"
 * (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via server settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
   * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there. So description "Discord webhook for #destsol-auto"
+*  (Secret file) id `utility-admin-kubeconfig-sa-token` to match the service account created via `kubeconfig-sa-token.yaml` if desired, description "kubeconfig file for utility-admin"
+*  (Secret file) TODO: GCR/GAR service account that's a Storage Admin and able to publish (and retrieve) Docker images. See the `backstage-infra` repo for further details
 
 ## More config
 
-* For backwards compatibility may want to attach the `master` (and `built-in` ?) label to the Jenkins controller until `main` is in use everywhere. Set under "Build Executor Status" link - Built-In Node - Configure (space separate multiple labels). Initial batch of renames have been done for DSL seed jobs since they're the main ones needing the controller.
-* There is a `content.terasology.io` (or whichever domain) defined for Jenkins as a secondary URL beyond the base jenkins subdomain. This is to help host certain other kinds of content from Jenkins like javadoc. Its ingress should spin up automatically as part of our setup, unsure if we need any other toggles or if this even has or will go out of date at some point.
-  * Set **Resource Root URL** to https://content.terasology.io/ under Manage Jenkins / general to enable this within Jenkins
-  * See See https://www.jenkins.io/doc/book/security/user-content/#resource-root-url for details
+* For backwards compatibility we have `master` and `built-in` labels attached to the Jenkins controller until `main` is in use everywhere. Initial batch of renames have been done for DSL seed jobs since they're the main ones needing the controller.
+* There is a `content.terasology.io` (or whichever domain) defined for Jenkins as a secondary URL beyond the base jenkins subdomain. This is to help host certain other kinds of content from Jenkins like javadoc. Its ingress should spin up automatically as part of our setup and the related config in Jenkins is automated as well
+  * See https://www.jenkins.io/doc/book/security/user-content/#resource-root-url for details
 * In Jenkins main config look for and adjust GitHub API usage from "Normalize API requests" to "Throttle at/near rate limit" (see todo-swap-this.png)
 * Also in Jenkins main config look for "GitHub Servers" and add one, leaving it on defaults (public cloud) and use the GooeyHub PAT secret text credential
   * When ready for this Jenkins to take control of all the things make sure "Manage Hooks" is checked - but consider cleaning old obsolete hooks (and apps for that sake) on busy repos.
 * If jobs are created via DSL that include system Groovy scripts (able to interact with Jenkins itself at an admin level, so hugely powerful) they may need to be manually approved under Manage Jenkins once - this is an annoying "security" feature there doesn't appear to be an easy way to greenlight ahead of time despite the Job DSL stuff itself being at the admin-only level and OKed by being written by, well, admins.
   * The https://github.com/MovingBlocks/JenkinsAgentPrecachedJava/blob/main/Jenkinsfile job seems to provoke this over a simply use of encoding in Groovy and will need manual approval - running the job once to let it fail will then pop the approval request into the admin section (which requires purposefully failing a job once which feels dirty)
+  * Actually, if you disable the Groovy sandbox checkbox on a system Groovy step in a new enough version and are logged in as an admin you get a button now to pre-approve the script! At least for some job types.
 
 ## Plugins and upgrades
 
@@ -115,6 +117,8 @@ At this point you should be in business and able to watch the unfolding build st
 Note that as the cluster auto-scales to fit more builders a few may fail with a timeout message to Kubernetes. This is likely because a new node didn't come up in time to allow that particular builder to be fully born. Don't worry - more should follow.
 
 If you see a *bunch* of failed builders the cluster may have maxed out. Either just wait for the available build capacity to grind down the queue or consider whether the cluster needs a higher auto-scaling limit
+
+**NOTE:** There may be quirks about generating _views_ using Job DSL. The Terasology `moduleViews.groovy` script for instance seems to get seen and run by the associated DSL job, but no views show up. Making a manual job to run just that Job DSL copy pasted in seems to make the views show up fine.
 
 ## Agents
 

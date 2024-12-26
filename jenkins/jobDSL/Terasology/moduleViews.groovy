@@ -4,7 +4,7 @@ folder(baseModuleFolderName) {
     description("These folders are letter-based groupings of module jobs")
 }
 
-// Here then come the views
+// Here then come the views - but seemingly not on the first try. Dropping this into a hand-made DSL job seems to make them appear...
 listView("$baseModuleFolderName/master") {
     description('All master branch jobs for Terasology modules')
     recurse true
