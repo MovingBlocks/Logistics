@@ -126,8 +126,8 @@ jenkins:
                       image: "terasology/jenkins-android-agent:latest"
                       command: "sleep"
                       args: "infinity"
-                      resourceRequestCpu: "850m"
-                      resourceRequestMemory: "5120Mi"
+                      resourceRequestCpu: "750m"
+                      resourceRequestMemory: "4864Mi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
 
