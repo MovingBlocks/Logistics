@@ -64,7 +64,18 @@ Jenkins has built up a lot of credentials over the years, and all the original i
 * (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via server settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
   * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there. So description "Discord webhook for #destsol-auto"
 *  (Secret file) id `utility-admin-kubeconfig-sa-token` to match the service account created via `kubeconfig-sa-token.yaml` if desired, description "kubeconfig file for utility-admin"
-*  (Secret file) TODO: GCR/GAR service account that's a Storage Admin and able to publish (and retrieve) Docker images. See the `backstage-infra` repo for further details
+*  (Secret file) id `jenkins-gar-sa` for publishing (and retrieving) Docker images from Google Artifact Registry.
+
+### Setting up Google Artifact Repository
+
+Assuming locally configured `gcloud` or use of a Cloud Terminal in GCP:
+
+* `gcloud iam service-accounts create jenkins-gar-sa` to create a service user in GCP (should create as `jenkins-gar-sa@teralivekubernetes.iam.gserviceaccount.com`)
+* Grant "Artifact Registry Create-on-Push Writer" to the account via IAM menu on GCP (potentially "Storage Admin" might be needed for some things? Utility bucket access - different SA?)
+* Go to IAM / Service Accounts and on the KEYS tab add a new JSON key to the service account - we need this as a Secret File in Jenkins. Keep it somewhere local for a moment.
+* Go add a new credential in Jenkins and store the JSON file there (see main secrets section)
+
+See test job execution at https://jenkins.terasology.io/job/Experimental/job/TestGAR/1/console
 
 ## More config
 

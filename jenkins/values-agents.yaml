@@ -171,3 +171,15 @@ jenkins:
                       resourceRequestMemory: "2048Mi"
                       resourceLimitCpu: "250m"
                       resourceLimitMemory: "4096Mi"
+
+                  # New test agent custom built on latest Jenkins inbound agent
+                  - name: "test-new-precached-image-via-jcasc"
+                    label: "newprecachedjcasc"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: jnlp  # Override the default Jenkins container with our extended image
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      resourceRequestCpu: "250m"
+                      resourceRequestMemory: "2048Mi"
+                      resourceLimitCpu: "750m"
+                      resourceLimitMemory: "4096Mi"
