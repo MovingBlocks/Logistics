@@ -172,8 +172,8 @@ jenkins:
                       resourceLimitCpu: "250m"
                       resourceLimitMemory: "4096Mi"
 
-                  # New test agent custom built on latest Jenkins inbound agent
-                  - name: "test-new-precached-image-via-jcasc"
+                  # New multi-JDK pre-cached Java agents taking over from old approach with one image per JDK (although only 8 and 11 need extra steps)
+                  - name: "pre-cached-jdk11"
                     label: "newprecachedjcasc"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
@@ -183,3 +183,25 @@ jenkins:
                       resourceRequestMemory: "2048Mi"
                       resourceLimitCpu: "750m"
                       resourceLimitMemory: "4096Mi"
+                      envVars: # Allow Jenkins agent process to use its own JDK while configuring a different one for general purpose
+                      - envVar:
+                          key: "JENKINS_JAVA_BIN"
+                          value: "/opt/java/openjdk/bin/java"
+                      - envVar:
+                          key: "JAVA_HOME"
+                          value: "/opt/jdk-11.0.25+9"
+                      - envVar:
+                          key: "PATH" # Note: Trying to prepend the existing var by including :$PATH broke the Jenkins agent connection process - hard coding instead
+                          value: "/opt/jdk-11.0.25+9/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
+
+                  # For reference and testing this is a vanilla default Jenkins build agent that just comes with its JDK 17 and nothing else
+                  - name: "default17"
+                    label: "default17"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: "jnlp"
+                      image: "jenkins/inbound-agent:latest-jdk17"
+                      alwaysPullImage: true
+                      resourceRequestCpu: "800m"
+                      resourceRequestMemory: "6144Mi"
+                      workingDir: "/home/jenkins/agent"
