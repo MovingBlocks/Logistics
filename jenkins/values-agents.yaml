@@ -16,7 +16,7 @@ jenkins:
                   # Our Kaniko-made pre-cached Java builders handle the bulk of agent requests (primary TS and DS jobs) at various JDK levels
                   # Some builds (engine usually) have spiked as high as 4 CPU and 10 GB memory - we used to have module specific light builders, possible good TODO to repeat
                   - name: "kaniko-precached-jdk11"
-                    label: "kaniko-precached-jdk11 ts-engine ts-module lib heavy light java11 light-java"
+                    label: "kaniko-precached-jdk11"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: builder
@@ -42,7 +42,7 @@ jenkins:
                       resourceLimitMemory: "8192Mi"
 
                   - name: "kaniko-precached-jdk17"
-                    label: "kaniko-precached-jdk17 ts-module heavy java17"
+                    label: "kaniko-precached-jdk17"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: builder
@@ -65,7 +65,7 @@ jenkins:
                           effect: "NoSchedule"
 
                   - name: "kaniko-precached-jdk17-engine"
-                    label: "kaniko-precached-jdk17 ts-engine ts-module heavy java17"
+                    label: "kaniko-precached-jdk17"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: builder
@@ -173,16 +173,37 @@ jenkins:
                       resourceLimitMemory: "4096Mi"
 
                   # New multi-JDK pre-cached Java agents taking over from old approach with one image per JDK (although only 8 and 11 need extra steps)
-                  - name: "pre-cached-jdk11"
-                    label: "newprecachedjcasc"
+                  - name: "pre-cached-jdk8"
+                    label: "java8"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Override the default Jenkins container with our extended image
                       image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
-                      resourceRequestCpu: "250m"
-                      resourceRequestMemory: "2048Mi"
-                      resourceLimitCpu: "750m"
-                      resourceLimitMemory: "4096Mi"
+                      resourceRequestCpu: "800m"
+                      resourceRequestMemory: "2.5Gi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "5Gi"
+                      envVars: # Allow Jenkins agent process to use its own JDK while configuring a different one for general purpose
+                      - envVar:
+                          key: "JENKINS_JAVA_BIN"
+                          value: "/opt/java/openjdk/bin/java"
+                      - envVar:
+                          key: "JAVA_HOME"
+                          value: "/opt/jdk8u432-b06"
+                      - envVar:
+                          key: "PATH" # Note: Trying to prepend the existing var by including :$PATH broke the Jenkins agent connection process - hard coding instead
+                          value: "/opt/jdk8u432-b06/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
+
+                  - name: "pre-cached-jdk11"
+                    label: "lib light java11 light-java"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: jnlp  # Override the default Jenkins container with our extended image
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      resourceRequestCpu: "800m"
+                      resourceRequestMemory: "2.5Gi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "5Gi"
                       envVars: # Allow Jenkins agent process to use its own JDK while configuring a different one for general purpose
                       - envVar:
                           key: "JENKINS_JAVA_BIN"
@@ -193,6 +214,50 @@ jenkins:
                       - envVar:
                           key: "PATH" # Note: Trying to prepend the existing var by including :$PATH broke the Jenkins agent connection process - hard coding instead
                           value: "/opt/jdk-11.0.25+9/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
+
+                  - name: "pre-cached-jdk17"
+                    label: "ts-module light java17"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: jnlp  # Override the default Jenkins container with our extended image
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      resourceRequestCpu: "800m"
+                      resourceRequestMemory: "2.5Gi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "5Gi"
+                    # Tolerate but do not require a node from the secondary node pool with more resources (toleration only) - improves availability for mainline stuff
+                    yaml: |
+                      apiVersion: v1
+                      kind: Pod
+                      spec:
+                        tolerations:
+                        - key: "heavy-builder-only"
+                          operator: "Equal"
+                          value: "true"
+                          effect: "NoSchedule"
+
+                  - name: "pre-cached-jdk17-heavy"
+                    label: "ts-engine ts-module heavy java17"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: jnlp  # Override the default Jenkins container with our extended image
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      resourceRequestCpu: "1"
+                      resourceRequestMemory: "6144Mi"
+                      resourceLimitCpu: "1750m"
+                      resourceLimitMemory: "8192Mi"
+                    # Require a node from the secondary node pool with more resources (toleration AND node selector)
+                    yaml: |
+                      apiVersion: v1
+                      kind: Pod
+                      spec:
+                        nodeSelector:
+                          builder: heavy
+                        tolerations:
+                        - key: "heavy-builder-only"
+                          operator: "Equal"
+                          value: "true"
+                          effect: "NoSchedule"
 
                   # For reference and testing this is a vanilla default Jenkins build agent that just comes with its JDK 17 and nothing else
                   - name: "default17"
