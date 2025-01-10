@@ -65,17 +65,30 @@ Jenkins has built up a lot of credentials over the years, and all the original i
   * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there. So description "Discord webhook for #destsol-auto"
 *  (Secret file) id `utility-admin-kubeconfig-sa-token` to match the service account created via `kubeconfig-sa-token.yaml` if desired, description "kubeconfig file for utility-admin"
 *  (Secret file) id `jenkins-gar-sa` for publishing (and retrieving) Docker images from Google Artifact Registry.
+*  (Secret file) id `jenkins-bucket-sa` for adding objects to existing GCP buckets
 
 ### Setting up Google Artifact Repository
 
 Assuming locally configured `gcloud` or use of a Cloud Terminal in GCP:
 
 * `gcloud iam service-accounts create jenkins-gar-sa` to create a service user in GCP (should create as `jenkins-gar-sa@teralivekubernetes.iam.gserviceaccount.com`)
-* Grant "Artifact Registry Create-on-Push Writer" to the account via IAM menu on GCP (potentially "Storage Admin" might be needed for some things? Utility bucket access - different SA?)
+  * Make the description something simple like "JSON key for a Artifact Registry GCP service user"
+* Grant the "Artifact Registry Create-on-Push Writer" role to the account via IAM menu on GCP
 * Go to IAM / Service Accounts and on the KEYS tab add a new JSON key to the service account - we need this as a Secret File in Jenkins. Keep it somewhere local for a moment.
 * Go add a new credential in Jenkins and store the JSON file there (see main secrets section)
 
 See test job execution at https://jenkins.terasology.io/job/Experimental/job/TestGAR/1/console
+
+### Setting up GCP Bucket Access
+
+Much like the GAR setup we can make a separate credential for GCP bucket interaction without making these service accounts too wide.
+
+* Again create an account like `jenkins-bucket-sa` which would full name to `jenkins-bucket-sa@teralivekubernetes.iam.gserviceaccount.com`
+  * Description could be "JSON key for a GCP bucket service user"
+* Grant the "Storage Object Creator" role to the service account
+* Create a JSON key and again store it as a secret file in a Jenkins credential
+
+Se test job execution at https://jenkins.terasology.io/job/Experimental/job/TestBucketGCP/5/console which inserts a "folder" in the resulting path (in GCP speak just a "prefix" of an object)
 
 ## More config
 

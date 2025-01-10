@@ -13,82 +13,7 @@ jenkins:
 
                 templates:
 
-                  # Our Kaniko-made pre-cached Java builders handle the bulk of agent requests (primary TS and DS jobs) at various JDK levels
-                  # Some builds (engine usually) have spiked as high as 4 CPU and 10 GB memory - we used to have module specific light builders, possible good TODO to repeat
-                  - name: "kaniko-precached-jdk11"
-                    label: "kaniko-precached-jdk11"
-                    nodeUsageMode: "EXCLUSIVE"
-                    containers:
-                    - name: builder
-                      image: "terasology/jenkins-precached-agent:latest-jdk11"
-                      command: "sleep"
-                      args: "infinity"
-                      resourceRequestCpu: "1"
-                      resourceRequestMemory: "6144Mi"
-                      resourceLimitCpu: "1750m"
-                      resourceLimitMemory: "8192Mi"
-
-                  - name: "kaniko-precached-jdk8"
-                    label: "kaniko-precached-jdk8"
-                    nodeUsageMode: "EXCLUSIVE"
-                    containers:
-                    - name: builder
-                      image: "terasology/jenkins-precached-agent:latest-jdk8"
-                      command: "sleep"
-                      args: "infinity"
-                      resourceRequestCpu: "1"
-                      resourceRequestMemory: "6144Mi"
-                      resourceLimitCpu: "1750m"
-                      resourceLimitMemory: "8192Mi"
-
-                  - name: "kaniko-precached-jdk17"
-                    label: "kaniko-precached-jdk17"
-                    nodeUsageMode: "EXCLUSIVE"
-                    containers:
-                    - name: builder
-                      image: "terasology/jenkins-precached-agent:latest-jdk17"
-                      command: "sleep"
-                      args: "infinity"
-                      resourceRequestCpu: "800m"
-                      resourceRequestMemory: "2.5Gi"
-                      resourceLimitCpu: "1750m"
-                      resourceLimitMemory: "5Gi"
-                    # Tolerate but do not require a node from the secondary node pool with more resources (toleration only)
-                    yaml: |
-                      apiVersion: v1
-                      kind: Pod
-                      spec:
-                        tolerations:
-                        - key: "heavy-builder-only"
-                          operator: "Equal"
-                          value: "true"
-                          effect: "NoSchedule"
-
-                  - name: "kaniko-precached-jdk17-engine"
-                    label: "kaniko-precached-jdk17"
-                    nodeUsageMode: "EXCLUSIVE"
-                    containers:
-                    - name: builder
-                      image: "terasology/jenkins-precached-agent:latest-jdk17"
-                      command: "sleep"
-                      args: "infinity"
-                      resourceRequestCpu: "1"
-                      resourceRequestMemory: "6144Mi"
-                      resourceLimitCpu: "1750m"
-                      resourceLimitMemory: "8192Mi"
-                    # Require a node from the secondary node pool with more resources (toleration AND node selector)
-                    yaml: |
-                      apiVersion: v1
-                      kind: Pod
-                      spec:
-                        nodeSelector:
-                          builder: heavy
-                        tolerations:
-                        - key: "heavy-builder-only"
-                          operator: "Equal"
-                          value: "true"
-                          effect: "NoSchedule"
-
+                  # TODO: Rebuild atop latest inbound solely using jnlp container rather than an extra
                   # For native builds of some of our libraries
                   - name: "java-native"
                     label: "java-native"
@@ -117,6 +42,7 @@ jenkins:
                       resourceLimitCpu: "750m"
                       resourceLimitMemory: "4096Mi"
 
+                  # TODO: Rebuild atop latest inbound solely using jnlp container rather than an extra (and remove DS default container declaration)
                   # Android builds for Gestalt and Destination Sol
                   - name: "android-agent"
                     label: "android"
@@ -131,7 +57,7 @@ jenkins:
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
 
-                  # For building our own custom Docker images
+                  # For building our own custom Docker images (without the less secure use of Docker-in-Docker)
                   - name: "kaniko"
                     label: "kaniko"
                     nodeUsageMode: "EXCLUSIVE"
@@ -145,26 +71,34 @@ jenkins:
                       resourceLimitCpu: "900m"
                       resourceLimitMemory: "8Gi"
 
-                  # For Backstage and Docker stuff
-                  - name: "jenkins-agent-dind"
-                    label: "docker node20"
+                  # For Backstage and Docker stuff - has two different containers
+                  - name: "node20-and-dind"
+                    label: "node20 docker"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Use "jnlp" as the container name as this image relies on its own Jenkins config
                       image: "ghcr.io/felipecrs/jenkins-agent-dind:sha-56f739d"
                       privileged: true  # Add privileged mode for docker-in-docker (not great for security but eh)
                       resourceRequestCpu: "250m"
-                      resourceRequestMemory: "2048Mi"
+                      resourceRequestMemory: "2Gi"
                       resourceLimitCpu: "750m"
-                      resourceLimitMemory: "4096Mi"
+                      resourceLimitMemory: "5Gi"
+                    - name: node # An added utility container includes node 20
+                      image: "node:20"
+                      command: "sleep"
+                      args: "infinity"
+                      resourceRequestCpu: "250m"
+                      resourceRequestMemory: "2Gi"
+                      resourceLimitCpu: "1250m"
+                      resourceLimitMemory: "5Gi"
 
-                  # For utility Kubernetes - above suddenly couldn't find kubectl anymore, this has somewhat too many other things and may be unmaintained
-                  - name: "jenkins-agent-kubectl"
-                    label: "kubectl"
+                  # For utility Kubernetes & GCloud
+                  - name: "gcloud-cli"
+                    label: "gcloud kubectl"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
-                    - name: builder
-                      image: "tfgco/kubectl:2.5.2"
+                    - name: utility
+                      image: "gcr.io/google.com/cloudsdktool/google-cloud-cli:504.0.1"
                       command: "sleep"
                       args: "infinity"
                       resourceRequestCpu: "125m"
@@ -178,7 +112,7 @@ jenkins:
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Override the default Jenkins container with our extended image
-                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/logistics/precachedagent:latest"
                       resourceRequestCpu: "800m"
                       resourceRequestMemory: "2.5Gi"
                       resourceLimitCpu: "1750m"
@@ -194,12 +128,13 @@ jenkins:
                           key: "PATH" # Note: Trying to prepend the existing var by including :$PATH broke the Jenkins agent connection process - hard coding instead
                           value: "/opt/jdk8u432-b06/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
 
+                  # Note that "lib", "light" and "light-java" label jobs tend to be an old generation from back when the JDK was not explicitly called out - leave those on JDK 11 for now
                   - name: "pre-cached-jdk11"
                     label: "lib light java11 light-java"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Override the default Jenkins container with our extended image
-                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/logistics/precachedagent:latest"
                       resourceRequestCpu: "800m"
                       resourceRequestMemory: "2.5Gi"
                       resourceLimitCpu: "1750m"
@@ -216,11 +151,11 @@ jenkins:
                           value: "/opt/jdk-11.0.25+9/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
 
                   - name: "pre-cached-jdk17"
-                    label: "ts-module light java17"
+                    label: "ts-module java17"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Override the default Jenkins container with our extended image
-                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/logistics/precachedagent:latest"
                       resourceRequestCpu: "800m"
                       resourceRequestMemory: "2.5Gi"
                       resourceLimitCpu: "1750m"
@@ -241,7 +176,7 @@ jenkins:
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Override the default Jenkins container with our extended image
-                      image: "us-east1-docker.pkg.dev/teralivekubernetes/test-docker/precachedagent:latest"
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/logistics/precachedagent:latest"
                       resourceRequestCpu: "1"
                       resourceRequestMemory: "6144Mi"
                       resourceLimitCpu: "1750m"
