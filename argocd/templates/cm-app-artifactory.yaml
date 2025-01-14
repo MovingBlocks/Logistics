@@ -18,7 +18,7 @@ data:
       source:
         repoURL: 'https://github.com/MovingBlocks/Logistics.git'
         path: artifactory
-        targetRevision: repatriation
+        targetRevision: main
         helm:
           valueFiles:
             - values.yaml
