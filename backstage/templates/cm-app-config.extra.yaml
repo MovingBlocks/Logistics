@@ -89,8 +89,40 @@ data:
         entityFilename: catalog-info.yaml
         pullRequestBranchName: backstage-integration
       rules:
-        - allow: [Component, System, Domain, API, Resource, Location, Template, User, Group]
+        - allow: [Domain, Component, System, Domain, API, Resource, Location, Template, User, Group]
       locations:
+        # DevOps Domain example set
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/domain-devops.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/env-jira-prod.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/env-jira-stage.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/group-devops-operations.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/group-devops-tools.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/group-devops.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/process-user-admin.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/system-build.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/system-track.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/tenant-jira-abc.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/tenant-jira-tool.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/tool-jenkins.yaml
+        - type: file
+          target: ${CATALOG_FILE_PATH}/examples/devops-domain/tool-jira.yaml
+
+        # Jenkins template (relied on an old Jenkinsfile in an Operator Jenkins)
+        - type: url
+          target: https://github.com/Cervator/backstage-template-jenkins/blob/master/template.yaml
+
         # Ghost blog example template
         - type: url
           target: https://github.com/Cervator/backstage-template-ghost/blob/main/template.yaml
@@ -111,24 +143,16 @@ data:
         # Local example template
         - type: file
           target: ${CATALOG_FILE_PATH}/examples/template/template.yaml
-          rules:
-            - allow: [Template]
 
         # Local example organizational data
         - type: file
           target: ${CATALOG_FILE_PATH}/examples/org.yaml
-          rules:
-            - allow: [User, Group]
 
-        ## Uncomment these lines to add more example data
         - type: url
           target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
 
-        ## Uncomment these lines to add an example org
         - type: url
           target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
-          rules:
-            - allow: [User, Group]
 
     soundcheck:
       programs:
