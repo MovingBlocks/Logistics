@@ -1,0 +1,78 @@
+pipeline {
+    agent {
+        label 'kubectl'
+    }
+
+    environment {
+        NAMESPACE = '' // Initialize NAMESPACE so we can change it in one place and use it elsewhere
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                script {
+                    // Determine the namespace based on the branch name - anything other than 'main' becomes a test build
+                    env.NAMESPACE = BRANCH_NAME == 'main' ? 'wekan-main' : 'wekan-test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                anyOf {
+                    branch 'main'
+                    changeRequest target: 'main'
+                }
+            }
+            steps {
+                script {
+                    container("utility") {
+                        withKubeConfig(credentialsId: 'utility-admin-kubeconfig-sa-token') {
+                            sh "helm upgrade --install wekan wekan/wekan --namespace ${NAMESPACE} --create-namespace -f values-${BRANCH_NAME}.yaml"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            when {
+                anyOf {
+                    branch 'main'
+                    changeRequest target: 'main'
+                }
+            }
+            steps {
+                withEnv(['NAMESPACE=${NAMESPACE}']) {
+                    container("utility") {
+                        withKubeConfig(credentialsId: 'utility-admin-kubeconfig-sa-token') {
+
+                            script { // TODO: This was used doing experimental testing, we just need to make a proper agent for it
+                                // Check if Python is installed
+                                def python = sh(script: 'which python || true', returnStdout: true).trim()
+                                if (python == '') {
+                                    error("Python is not installed")
+                                }
+
+                                // Check if behave is installed
+                                def behave = sh(script: 'python -m pip show behave || true', returnStdout: true).trim()
+                                if (behave == '') {
+                                    // Install behave
+                                    sh 'python -m pip install behave'
+                                }
+
+                                // Check if kubernetes module is installed
+                                def kubernetes = sh(script: 'python -m pip show kubernetes || true', returnStdout: true).trim()
+                                if (kubernetes == '') {
+                                    // Install kubernetes module
+                                    sh 'python -m pip install kubernetes'
+                                }
+                            }
+                            sh 'behave wekan/features'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

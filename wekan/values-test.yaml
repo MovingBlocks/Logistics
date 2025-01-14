@@ -1,0 +1,58 @@
+# terawekan: # This is needed if using the arent chart, as we subchart the target apps - but not if applying tese values directly to the app chart
+ingress:
+  enabled: true
+  hosts:
+    - wekan.terasology.io
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    #cert-manager.io/cluster-issuer: letsencrypt-staging
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+  tls:
+  - secretName: wekan-tls-secret
+    hosts:
+      - wekan.terasology.io
+endpoint: wekan.terasology.io
+root_url: https://wekan.terasology.io
+
+# Attempt to configure OAuth 2 with Keycloak
+env:
+  - name: DEBUG
+    value: true
+  - name: OAUTH2_ENABLED
+    value: true
+  - name: OAUTH2_CLIENT_ID
+    value: wekan
+  - name: OAUTH2_SERVER_URL
+    value: https://keycloak.terasology.io
+  - name: OAUTH2_AUTH_ENDPOINT
+    value: /realms/testrealm/protocol/openid-connect/auth
+  - name: OAUTH2_USERINFO_ENDPOINT
+    value: /realms/testrealm/protocol/openid-connect/userinfo
+  - name: OAUTH2_TOKEN_ENDPOINT
+    value: /realms/testrealm/protocol/openid-connect/token
+  - name: OAUTH2_SECRET
+    value: <secret from keycloak>
+  - name: OAUTH2_ID_MAP
+    value: preferred_username
+  - name: OAUTH2_USERNAME_MAP
+    value: preferred_username
+  - name: OAUTH2_FULLNAME_MAP
+    value: given_name
+  - name: OAUTH2_EMAIL_MAP
+    value: email
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 300m
+  limits:
+    memory: 1Gi
+    cpu: 500m
+
+mongodb-replicaset:
+  replicas: 1
