@@ -1,0 +1,8 @@
+apiVersion: v2
+name: terawekan
+version: 1.0.0
+
+dependencies:
+  - name: wekan
+    version: 7.38
+    repository: https://wekan.github.io/charts
