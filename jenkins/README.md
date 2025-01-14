@@ -159,9 +159,10 @@ Even deeper cost optimization would be doable via preemptible / spot instance no
 
 * Outstanding agent stuff
   * TODO: The Python image does work, as root, but Jenkins logs in as jenkins which gets no easy access to Python. Do we even need this agent? Probably an easy fix if so
-  * TODO: I removed the `kubectl-agent-experimental` agent as it was a minimal throwaway image I tinkered with, the newer DinD image has kubectl and other stuff. Could delete the repo/branch
     * One minor advantage: this agent allowed usage of kubectl without being privileged with Docker ...
   * May need another pass on sorting out native containers vs utility containers / check on Jenkinsfiles that now need to explicitly declare a container to run something in
+  * Delete / replace any outdated repos (use the new experimental precached agent in place of the old kaniko-built ones)
+  * Actually start using the Kaniko agents again to build docker and limit use of the dind one
 * Fix https://docs.gradle.org/current/userguide/upgrading_version_7.html#abstractarchivetask_api_cleanup for the Omega job
 * More plugin considerations
   * maybe theme-manager - was on old server but unsure. Better icons plz ...

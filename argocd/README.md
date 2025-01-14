@@ -50,9 +50,11 @@ Adding Dex into the mix backed by a GitHub OAuth application takes a few steps. 
 
 Register a new GitHub OAuth app and record the client id and client secret. Put the id into `values.yaml` and update the secret in `github-oauth-secret-do-not-recommit.yaml` as per the instructions but of course _do not_ commit it again.
 
-Apply it: `kubectl apply -f github-oauth-secret-do-not-recommit.yaml -n argocd`
+Apply it: `kubectl apply -f github-oauth-secret-do-not-recommit.yaml -n argocd` (ended up just deleting this)
 
-Enable some additional config to `values.yaml` - see the dex tree in the included file (still TODO)
+Enable some additional config to `values.yaml` - see the dex tree in the included file (still TODO - and found to probably not work anyway)
+
+Far later todo: may just replace this with keycloak? Never did manage to get further, although an OAuth app exists at https://github.com/organizations/CervTest/settings/applications/2226972
 
 ### Add Credentials Template
 
