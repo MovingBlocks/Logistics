@@ -1,0 +1,32 @@
+nexus3:
+  service:
+    type: ClusterIP
+    clusterIP:
+    annotations: {}
+    port: 8081
+    additionalPorts:
+    - port: 8082
+      name: docker-group
+      containerPort: 8082
+      host: docker.terasology.io
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      kubernetes.io/ingress.class: "nginx"
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+      nginx.ingress.kubernetes.io/rewrite-target: "/"
+    hosts:
+    - nexus.terasology.io
+    ingressClassName: nginx
+    tls:
+      - hosts:
+          - nexus.terasology.io
+          - docker.terasology.io
+        secretName: nexus.terasology.io
+  persistence:
+    enabled: true
+    size: 10Gi

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: nexus
+version: 1.0.0
+
+dependencies:
+  - name: nexus3
+    version: 4.39.0
+    repository: https://stevehipwell.github.io/helm-charts/

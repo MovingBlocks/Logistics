@@ -28,6 +28,8 @@ jenkins:
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "8192Mi"
 
+                  # NOTE: Seems outdated - https://registry.hub.docker.com/r/terasology/modulesite was built from a GitHub repo
+                  # now redirecting to https://github.com/MovingBlocks/movingblocks.github.com which uses a GitHub action instead
                   # For our module site and other web stuff
                   - name: "python-agent"
                     label: "python"

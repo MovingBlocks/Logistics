@@ -157,10 +157,11 @@ Even deeper cost optimization would be doable via preemptible / spot instance no
 
 ## Left to do
 
-* Add remaining build agents - done but not tested
+* Outstanding agent stuff
   * TODO: The Python image does work, as root, but Jenkins logs in as jenkins which gets no easy access to Python. Do we even need this agent? Probably an easy fix if so
   * TODO: I removed the `kubectl-agent-experimental` agent as it was a minimal throwaway image I tinkered with, the newer DinD image has kubectl and other stuff. Could delete the repo/branch
     * One minor advantage: this agent allowed usage of kubectl without being privileged with Docker ...
+  * May need another pass on sorting out native containers vs utility containers / check on Jenkinsfiles that now need to explicitly declare a container to run something in
 * Fix https://docs.gradle.org/current/userguide/upgrading_version_7.html#abstractarchivetask_api_cleanup for the Omega job
 * More plugin considerations
   * maybe theme-manager - was on old server but unsure. Better icons plz ...
@@ -168,3 +169,6 @@ Even deeper cost optimization would be doable via preemptible / spot instance no
   * maybe ssh-slaves - unsure if that would power either Mac or Win agents? Prolly not
   * maybe pipeline-milestone-step but unsure if we ever use it
   * thin-plugin could probably be dropped - or use it just in case for regular backups?
+* The old proprietary Jenkins from Cloudbees supported setting environment level details on folders, allowing all Nanoware jobs to inherit a thing for gradle.properties to repoint Artifactory to test/experimental repos, for instance. While there are plugins like https://plugins.jenkins.io/folder-properties/ or the option to define a folder-level shared library (which should be supported within JTE at this point too) those all rely on hooks defined in `Jenkinsfiles` - although they indirectly could set something on the environment then later loaded by Gradle. But no obvious way to directly set an env var based on a folder to be directly used by Gradle.
+* Adjust any `G` to `Gi` for resources, `Gi` matches the number better
+* New PS in IntelliJ on Windows fails to do nice colored output for groovyw and outputs special chars instead `modules\ModuleTestingEnvironment/build.gradle: â?? refreshed`
