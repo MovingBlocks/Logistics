@@ -104,9 +104,9 @@ jenkins:
                       command: "sleep"
                       args: "infinity"
                       resourceRequestCpu: "125m"
-                      resourceRequestMemory: "2048Mi"
+                      resourceRequestMemory: "1.5Gi"
                       resourceLimitCpu: "250m"
-                      resourceLimitMemory: "4096Mi"
+                      resourceLimitMemory: "4Gi"
 
                   # New multi-JDK pre-cached Java agents taking over from old approach with one image per JDK (although only 8 and 11 need extra steps)
                   - name: "pre-cached-jdk8"
@@ -141,6 +141,28 @@ jenkins:
                       resourceRequestMemory: "2.5Gi"
                       resourceLimitCpu: "1750m"
                       resourceLimitMemory: "5Gi"
+                      envVars: # Allow Jenkins agent process to use its own JDK while configuring a different one for general purpose
+                      - envVar:
+                          key: "JENKINS_JAVA_BIN"
+                          value: "/opt/java/openjdk/bin/java"
+                      - envVar:
+                          key: "JAVA_HOME"
+                          value: "/opt/jdk-11.0.25+9"
+                      - envVar:
+                          key: "PATH" # Note: Trying to prepend the existing var by including :$PATH broke the Jenkins agent connection process - hard coding instead
+                          value: "/opt/jdk-11.0.25+9/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
+
+                  # Making this agent to have a new explicitly light Java 11 with lower resource demands for libs and small things - find and assign things to this over time. Too small for modules?
+                  - name: "pre-cached-jdk11-light"
+                    label: "light-java-11"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: jnlp  # Override the default Jenkins container with our extended image
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/logistics/precachedagent:latest"
+                      resourceRequestCpu: "200m"
+                      resourceRequestMemory: "1.5Gi"
+                      resourceLimitCpu: "1250m"
+                      resourceLimitMemory: "4Gi"
                       envVars: # Allow Jenkins agent process to use its own JDK while configuring a different one for general purpose
                       - envVar:
                           key: "JENKINS_JAVA_BIN"

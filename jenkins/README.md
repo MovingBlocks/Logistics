@@ -63,9 +63,19 @@ Jenkins has built up a lot of credentials over the years, and all the original i
 * (Username with password) user `gooeyhub` on Docker Hub with id `docker-hub-terasology-token` - "Docker hub user/pass"
 * (Secret text) id `destsolDiscordWebhook` with the webhook URL to our Discord (viewable via server settings / integrations - although there are a _lot_ of webhooks in there at this point ... maybe all the others are for GitHub direct rather than Jenkins and we stopped using the Jenkins one?) - so this one might be TODO - test
   * The original specific webhook intended here is the one for `#destsol-auto` and the value can be copied from there. So description "Discord webhook for #destsol-auto"
-*  (Secret file) id `utility-admin-kubeconfig-sa-token` to match the service account created via `kubeconfig-sa-token.yaml` if desired, description "kubeconfig file for utility-admin"
-*  (Secret file) id `jenkins-gar-sa` for publishing (and retrieving) Docker images from Google Artifact Registry.
-*  (Secret file) id `jenkins-bucket-sa` for adding objects to existing GCP buckets
+* (Secret text) id `dbip-api-key` for the db-ip.com service used by our Meta Server with description "An API key for db-ip.com used by the Terasology meta server"
+* (Secret text) id `meta-server-edit-secret` with description "Meta-Server server edit secret"
+* (Secret file) id `utility-admin-kubeconfig-sa-token` to match the service account created via `kubeconfig-sa-token.yaml` if desired, description "kubeconfig file for utility-admin"
+* (Secret file) id `jenkins-gar-sa` for publishing (and retrieving) Docker images from Google Artifact Registry.
+* (Secret file) id `jenkins-bucket-sa` for adding objects to existing GCP buckets
+
+Note that in a Jenkins generations ago we also had credentials related to release signing of Destination Sol including access to Google Play - we haven't released for a while and the exact process and involvement of those credentials is uncertain. Cervator likely still has the keystore and related files but we might need to (and/or want to) redo it more cleanly from scratch at some point. The credentials from the past:
+
+* (Secret file) id `destsol-signing-keystore` - `solAlt.jks` (The keystore used to sign releases for Destination Sol)
+* (Secret text) id `destsol-keystore-pass` - The password used to unlock the signing keystore for Destination Sol
+* (Secret text) id `destsol-signing-alias` -	The key alias used to sign releases for Destination Sol
+* (Secret text) id `destsol-signing-pass`	- The password for the key used to sign releases for Destination SoL
+* (Secret file) id `destsol-playstore-secret` - `pc-api-6276980919198358447-496-ea0b394f3f0d.json` (The secret json for Play Store DestSol deployments)
 
 ### Setting up Google Artifact Repository
 
