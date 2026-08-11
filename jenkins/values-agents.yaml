@@ -44,6 +44,26 @@ jenkins:
                       resourceLimitCpu: "750m"
                       resourceLimitMemory: "4096Mi"
 
+                  # New pre-cached agent for Vertex AI access to run embeddings from a pipeline and such
+                  # Jenkins UI actually has a spot for service account, can we use that instead of a yaml block?
+                  - name: "python-agent-ai"
+                    label: "python-ai"
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                    - name: builder
+                      image: "us-east1-docker.pkg.dev/teralivekubernetes/logistics/jenkins-python-ai-agent:latest"
+                      command: "sleep"
+                      args: "infinity"
+                      resourceRequestCpu: "250m"
+                      resourceRequestMemory: "2048Mi"
+                      resourceLimitCpu: "750m"
+                      resourceLimitMemory: "4096Mi"
+                    yaml: |
+                      apiVersion: v1
+                      kind: Pod
+                      spec:
+                        serviceAccountName: um-vertex-ai-sa
+
                   # TODO: Rebuild atop latest inbound solely using jnlp container rather than an extra (and remove DS default container declaration)
                   # Android builds for Gestalt and Destination Sol
                   - name: "android-agent"
@@ -130,7 +150,8 @@ jenkins:
                           key: "PATH" # Note: Trying to prepend the existing var by including :$PATH broke the Jenkins agent connection process - hard coding instead
                           value: "/opt/jdk8u432-b06/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
 
-                  # Note that "lib", "light" and "light-java" label jobs tend to be an old generation from back when the JDK was not explicitly called out - leave those on JDK 11 for now
+                  # "lib", "light" and "light-java" are an old generation of labels from before the JDK was called out explicitly, so they deliberately overlap with the JDK 17 template below.
+                  # Jobs are expected to ask compositely ("java11 && light"); a job requesting bare "light" may land on either JDK, which is acceptable for how rare those are.
                   - name: "pre-cached-jdk11"
                     label: "lib light java11 light-java"
                     nodeUsageMode: "EXCLUSIVE"
@@ -175,7 +196,7 @@ jenkins:
                           value: "/opt/jdk-11.0.25+9/bin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin"
 
                   - name: "pre-cached-jdk17"
-                    label: "ts-module java17"
+                    label: "ts-module java17 light light-java"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: jnlp  # Override the default Jenkins container with our extended image

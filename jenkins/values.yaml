@@ -15,10 +15,10 @@ jenkins:
       tag: "2.479.2-lts"
     resources:
       requests:
-        cpu: "250m"
-        memory: "4Gi"
+        cpu: "100m"
+        memory: "2.5Gi"
       limits:
-        cpu: "2000m"
+        cpu: "1500m"
         memory: "8Gi"
     JCasC:
       defaultConfig: false  # Disable the default JCasC configuration (don't want two Kubernetes clouds) - replacement config in values-jcasc-general.yaml
