@@ -13,13 +13,30 @@ jenkins:
     image:
       repository: "jenkins/jenkins"
       tag: "2.479.2-lts"
+    # The request is deliberately small: it is a scheduler reservation, and on a node
+    # sitting near 100% requested CPU a large one just blocks other pods from fitting.
+    #
+    # The LIMIT is what startup needs, and lowering it to 1500m alongside the request
+    # is what put the controller into a permanent CrashLoopBackOff. Boot is a CPU burst
+    # (plugin load + JCasC); the startup probe allows failureThreshold x periodSeconds,
+    # and with a smaller ceiling Jenkins stopped reaching /login inside the 120s the
+    # chart defaults to, so kubelet SIGTERMed it at ~115s on every attempt. Nothing else
+    # about the pod changed — same image, same config checksums — so this was the whole
+    # cause. Keep the ceiling high; it costs nothing while idle.
     resources:
       requests:
         cpu: "100m"
         memory: "2.5Gi"
       limits:
-        cpu: "1500m"
+        cpu: "2000m"
         memory: "8Gi"
+    probes:
+      # 300s rather than the chart's 120s. With a small request, Jenkins' share of a
+      # contended node is small too, so boot time varies with whatever else is running.
+      # A generous window does not slow a healthy start — the probe passes the moment
+      # /login answers — it only stops a slow start being mistaken for a failed one.
+      startupProbe:
+        failureThreshold: 30
     JCasC:
       defaultConfig: false  # Disable the default JCasC configuration (don't want two Kubernetes clouds) - replacement config in values-jcasc-general.yaml
     resourceRoot: "https://content.terasology.io/"
