@@ -31,12 +31,19 @@ jenkins:
         cpu: "2000m"
         memory: "8Gi"
     probes:
-      # 300s rather than the chart's 120s. With a small request, Jenkins' share of a
-      # contended node is small too, so boot time varies with whatever else is running.
-      # A generous window does not slow a healthy start — the probe passes the moment
-      # /login answers — it only stops a slow start being mistaken for a failed one.
+      # 600s, against a measured cold boot of ~270s on a quiet node (12:45:5x start,
+      # "Jenkins is fully up and running" at 12:50:20 — JCasC's PodTemplate walk is the
+      # long pole). The chart's default of 120s cannot fit that at all; 300s fit it with
+      # only 10% to spare, which is not margin on a node where a Terasology engine build
+      # can turn up mid-boot and take the CPU this controller is no longer reserving.
+      #
+      # A large window costs nothing on a healthy start — the probe passes the moment
+      # /login returns 200 — so the only thing it buys is not mistaking a slow start for
+      # a failed one. Getting that wrong is expensive: a controller that never becomes
+      # Ready also deadlocks the StatefulSet rollout that would fix it, because the
+      # controller will not replace a pod it has never seen Ready.
       startupProbe:
-        failureThreshold: 30
+        failureThreshold: 60
     JCasC:
       defaultConfig: false  # Disable the default JCasC configuration (don't want two Kubernetes clouds) - replacement config in values-jcasc-general.yaml
     resourceRoot: "https://content.terasology.io/"
