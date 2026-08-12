@@ -10,7 +10,18 @@ metadata:
   annotations:
     helm.sh/hook: pre-install
     helm.sh/hook-weight: "-5"
+    # Stops Helm removing this on uninstall. Argo CD does not read it — see below.
     helm.sh/resource-policy: keep
+    # Argo turns `helm.sh/hook` into a PreSync hook, which takes this object out of
+    # the app's desired state. It still carries the app.kubernetes.io/instance label
+    # Argo tracks resources by, so Argo sees a live object it owns that is not in the
+    # desired state and offers to prune it. This annotation is the only thing that
+    # says no; helm.sh/resource-policy above has no meaning to Argo.
+    #
+    # Losing the class would not disturb the running controller (a bound PV never
+    # re-reads it), but it would break volume expansion and leave any future PVC
+    # asking for `ssd` Pending forever — including when rebuilding this Jenkins.
+    argocd.argoproj.io/sync-options: Prune=false
 provisioner: kubernetes.io/gce-pd
 allowVolumeExpansion: true
 parameters:
