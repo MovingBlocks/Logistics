@@ -44,6 +44,32 @@ jenkins:
       # controller will not replace a pod it has never seen Ready.
       startupProbe:
         failureThreshold: 60
+
+      # Liveness and readiness both get a 60s timeout, and periodSeconds must move with
+      # it: leaving the chart's 10s period against a 60s timeout would let six probe
+      # requests stack up concurrently, all waiting on the one component that is already
+      # too busy to answer. The probe would then be adding load precisely when the
+      # controller is least able to take it.
+      #
+      # Readiness is the one that actually cost us a build. A failed readiness check
+      # removes the pod from the Service endpoints, and agents connect over websocket
+      # through that Service — so a controller that is merely *busy* gets cut off from
+      # every live agent mid-build, surfacing as "Connection was broken" and an
+      # AgentOfflineException. With a single replica there is nowhere else to route
+      # traffic anyway, so strict readiness buys nothing and costs whole builds.
+      #
+      # 60s x 5 failures = ~5 minutes unresponsive before either restarting (liveness)
+      # or withdrawing endpoints (readiness). Slower to notice a genuinely wedged
+      # controller; that trade is worth it when the alternative is killing running work
+      # during a normal publish spike.
+      livenessProbe:
+        timeoutSeconds: 60
+        periodSeconds: 60
+        failureThreshold: 5
+      readinessProbe:
+        timeoutSeconds: 60
+        periodSeconds: 60
+        failureThreshold: 5
     JCasC:
       defaultConfig: false  # Disable the default JCasC configuration (don't want two Kubernetes clouds) - replacement config in values-jcasc-general.yaml
     resourceRoot: "https://content.terasology.io/"
