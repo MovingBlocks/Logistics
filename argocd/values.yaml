@@ -2,6 +2,33 @@ argo-cd:
   notifications:
     enabled: false
 
+  # Probe timeouts, not resources — deliberately.
+  #
+  # repo-server was restarting every ~35 minutes (413 kills in 10 days, exit 143
+  # = SIGTERM after a failed liveness probe, not OOM). The chart default gives the
+  # probe timeoutSeconds: 1, and repo-server's liveness endpoint is healthz?full=true,
+  # the deep check. Every Argo pod here is BestEffort, so under any CPU contention
+  # that probe misses 1s, three misses kill the container, and a sync landing in that
+  # window fails with "connection refused" against repo-server:8081.
+  #
+  # The instinctive fix is resource requests, and it is wrong here for now: the node
+  # these all share reports 1881m of 1930m allocatable CPU already requested (97%,
+  # 66 pods on 2 vCPU). Adding requests would leave the new pods Pending and stall
+  # the rollout. Requests are still the right end state — they need capacity first,
+  # whether that is freeing reservations, spreading Argo across nodes, or a bigger
+  # pool. Raising the timeouts costs nothing and addresses the actual kill trigger.
+  repoServer:
+    livenessProbe:
+      timeoutSeconds: 5
+    readinessProbe:
+      timeoutSeconds: 5
+
+  server:
+    livenessProbe:
+      timeoutSeconds: 5
+    readinessProbe:
+      timeoutSeconds: 5
+
   configs:
     cm:
       dex:
