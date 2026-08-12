@@ -19,7 +19,7 @@ To experiment with a new/temporary one consider creating a new OAuth application
 * Make sure the Authorization callback URL is something like https://jenkins.terasology.io/securityRealm/finishLogin
 * Description can be anything, like "Jenkins for The Terasology Foundation"
 
-For the sake of local development ease you can use `jenkins-secret-do-not-recomment.yaml` to prepare the secrets for Kubernetes, just enter the right values as instructed by comments and run `kubectl apply -f jenkins-secret-do-not-recommit.yaml -n jenkins` - you may need to create the namespace first. HOWEVER you do of course not want to commit the actual values, and we should aim to use proper external secrets manager like Vault or some Argo-flavored thing (which does also have a plugin for Vault)
+For the sake of local development ease you can use `jenkins-secret-do-not-recommit.yaml` to prepare the secrets for Kubernetes, just enter the right values as instructed by comments and run `kubectl apply -f jenkins-secret-do-not-recommit.yaml -n jenkins` - you may need to create the namespace first. HOWEVER you do of course not want to commit the actual values, and we should aim to use proper external secrets manager like Vault or some Argo-flavored thing (which does also have a plugin for Vault)
 
 ## GitHub API via GitHub App
 
@@ -52,6 +52,8 @@ Follow the [guide][github-app] to create Credentials of type **GitHub App**.
 The key generated from the GitHub application was included in this repo as `terasology-jenkins-io.github-app.private-key.pkcs8` in the format needed by Jenkins, that has been moved to a password safe.
 
 Note: For testing a new Jenkins the existing GitHub app can simply be used directly - it will work even with a test Jenkins at a different URL.
+
+Note: At some point "Checks" became a needed permissions to update commit status on GitHub after builds. Make sure the GitHub app under Permissions & Events / Repository Permissions / Checks is set to "Read and write"
 
 ## Various secrets
 
