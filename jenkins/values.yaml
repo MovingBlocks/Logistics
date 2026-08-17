@@ -13,8 +13,13 @@ jenkins:
     image:
       repository: "jenkins/jenkins"
       tag: "2.479.2-lts"
-    # The request is deliberately small: it is a scheduler reservation, and on a node
-    # sitting near 100% requested CPU a large one just blocks other pods from fitting.
+    # The request was previously kept deliberately small, on the reasoning that a large
+    # reservation on a nearly-full node blocks other pods from fitting. Measurement
+    # retired that: the controller draws ~450m at p95 and ~620m at peak, so a 100m
+    # request did not make it a good neighbour, it just meant the controller lost the
+    # CPU share race whenever the node got busy — the same shape that took Artifactory
+    # down. A request is a reservation, not a cap; under-declaring it does not free
+    # capacity, it only hides who is using it.
     #
     # The LIMIT is what startup needs, and lowering it to 1500m alongside the request
     # is what put the controller into a permanent CrashLoopBackOff. Boot is a CPU burst
@@ -25,8 +30,8 @@ jenkins:
     # cause. Keep the ceiling high; it costs nothing while idle.
     resources:
       requests:
-        cpu: "100m"
-        memory: "2.5Gi"
+        cpu: "250m"
+        memory: "4Gi"
       limits:
         cpu: "2000m"
         memory: "8Gi"

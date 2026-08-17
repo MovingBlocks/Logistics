@@ -1,0 +1,5 @@
+# Normalize line endings in the repository. Without this, a Windows checkout with
+# core.autocrlf=true smudges files to CRLF while the index holds LF, which shows
+# every file as modified on a clean tree and adds whole-file diffs to unrelated
+# commits. The repository is authoritative; the working tree may differ per OS.
+* text=auto eol=lf

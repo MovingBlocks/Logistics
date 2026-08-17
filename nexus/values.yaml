@@ -1,3 +1,15 @@
+# Nexus was an experiment and is currently scaled to zero pending a decision on
+# whether to keep it. The PVC and all configuration below are retained, so it can
+# be brought back as it was.
+#
+# The replica count is NOT settable here: the nexus3 chart hardcodes `replicas: 1`
+# in its Deployment template and exposes no value for it (`highAvailability.replicas`
+# applies only in StatefulSet mode, i.e. `deployment: false`). Scaling is therefore
+# done out-of-band and is not reverted by anything, since this chart is not one of
+# the apps the Logistics ArgoCD reconciles:
+#
+#   kubectl scale deployment nexus-nexus3 -n nexus --replicas=0
+#
 nexus3:
   service:
     type: ClusterIP

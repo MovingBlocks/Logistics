@@ -1,6 +1,20 @@
 # Needed or the admin UI will hang forever complaining about mixed security modes, likely due to ingress setup details here
 proxy: edge
 
+# Sized from measurement. CPU idles near zero, so the request sits at a floor
+# rather than reserving capacity that goes unused almost all the time.
+#
+# Steady-state usage is comfortably inside the 500m ceiling, but the JVM's warm-up
+# burst has been measured above it — cold starts will be throttled and therefore
+# slower. That is the accepted trade for not letting one idle service hold half a
+# core; revisit the ceiling if startup ever runs into a probe deadline.
+resources:
+  requests:
+    cpu: "25m"
+    memory: "600Mi"
+  limits:
+    cpu: "500m"
+
 # Define the main ingress - the admin specific one isn't required but may be a good practice for later?
 ingress:
   enabled: true
