@@ -1,2 +1,13 @@
 cert-manager:
   installCRDs: true
+
+ingress-nginx:
+  controller:
+    # Sized from measurement: CPU just under the observed p95, memory just over
+    # it. The chart's 100m default under-reserved by roughly a factor of three
+    # for the busiest replica, which matters because every request into the
+    # cluster passes through here.
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "150Mi"
