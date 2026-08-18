@@ -3,9 +3,19 @@ cert-manager:
 
 ingress-nginx:
   controller:
-    # Two replicas because this is the single front door for every host in the
-    # cluster — at one replica, a restart is a total ingress outage.
+    # Two replicas: at one, a restart is a total ingress outage.
     replicaCount: 2
+    # Keep them on separate nodes. Without this, optimize-utilization packed both
+    # onto one node alongside Jenkins and Artifactory — so the replicas competed
+    # with each other, and a build spike took the ingress down anyway.
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: ingress-nginx
+                app.kubernetes.io/component: controller
+            topologyKey: kubernetes.io/hostname
     # The chart ships timeoutSeconds: 1 on both probes. Under real load the
     # controller cannot answer /healthz inside a second, so kubelet SIGTERMs it,
     # it exits 0, and restarts — repeatedly, because the load does not stop.
