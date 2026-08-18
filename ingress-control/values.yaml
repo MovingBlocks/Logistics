@@ -5,16 +5,20 @@ ingress-nginx:
   controller:
     # Two replicas: at one, a restart is a total ingress outage.
     replicaCount: 2
-    # Keep them on separate nodes. Without this, optimize-utilization packed both
-    # onto one node alongside Jenkins and Artifactory — so the replicas competed
-    # with each other, and a build spike took the ingress down anyway.
+    # Member of the "frontline" spread group — see logistics/docs/spread-groups.md.
+    # Every pod carrying this label repels every other one onto a separate node,
+    # across workloads, so the two ingress replicas and the Jenkins controller
+    # land on three different nodes rather than being bin-packed together.
+    podLabels:
+      siliconsaga.org/spread-group: frontline
     affinity:
       podAntiAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
-              matchLabels:
-                app.kubernetes.io/name: ingress-nginx
-                app.kubernetes.io/component: controller
+              matchExpressions:
+                - key: siliconsaga.org/spread-group
+                  operator: In
+                  values: [frontline]
             topologyKey: kubernetes.io/hostname
     # The chart ships timeoutSeconds: 1 on both probes. Under real load the
     # controller cannot answer /healthz inside a second, so kubelet SIGTERMs it,

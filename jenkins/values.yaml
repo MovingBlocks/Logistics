@@ -13,6 +13,21 @@ jenkins:
     image:
       repository: "jenkins/jenkins"
       tag: "2.479.2-lts"
+    # Member of the "frontline" spread group — see docs/spread-groups.md.
+    # Keeps the controller off the nodes running the ingress replicas: a build
+    # spike here used to starve the ingress they shared, which read on the
+    # dashboard as Artifactory being down.
+    podLabels:
+      siliconsaga.org/spread-group: frontline
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: siliconsaga.org/spread-group
+                  operator: In
+                  values: [frontline]
+            topologyKey: kubernetes.io/hostname
     # The request was previously kept deliberately small, on the reasoning that a large
     # reservation on a nearly-full node blocks other pods from fitting. Measurement
     # retired that: the controller draws ~450m at p95 and ~620m at peak, so a 100m
