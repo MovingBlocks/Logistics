@@ -11,7 +11,7 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
             cpu: "150m"
           limits:
             memory: "8Gi" # Was 7Gi, which left under 500Mi of headroom above the observed peak. Memory cannot be throttled, so a thin margin here is an OOMKill rather than a slowdown.
-            cpu: "750m" # Was 500m; JFrog's own minimum is 2 CPU. A 5g-heap JVM at 500m leaves GC almost no CPU and boot cannot finish inside the startup probe budget.
+            cpu: "1000m" # Was 500m then 750m. JFrog's own stated minimum is 2 CPU, and a 5g-heap JVM starved of CPU cannot finish boot inside the startup probe budget. Raised again after a cold start on a contended node took ~8.5min and cycled four dependent containers; the ceiling only costs anything while it is actually being used.
         javaOpts:
           xms: "5g"
           xmx: "5g"
