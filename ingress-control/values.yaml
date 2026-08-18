@@ -13,14 +13,26 @@ ingress-nginx:
     # times, which took artifactory.terasology.io down with it. Same failure the
     # ArgoCD repo-server and the Jenkins controller already hit.
     livenessProbe:
-      timeoutSeconds: 5
+      timeoutSeconds: 10
+      failureThreshold: 6
     readinessProbe:
-      timeoutSeconds: 5
+      timeoutSeconds: 10
+      failureThreshold: 5
     # Sized from measurement: CPU just under the observed p95, memory just over
     # it. The chart's 100m default under-reserved by roughly a factor of three
     # for the busiest replica, which matters because every request into the
     # cluster passes through here.
+    # Measured at 995m — a full core — while serving crawler traffic against
+    # Jenkins javadoc, against a 250m request. A request is the share the
+    # scheduler guarantees under contention, so under-declaring it by 4x is
+    # what starves the controller until it cannot answer its own /healthz
+    # inside the probe timeout. Raising the request is the fix; raising the
+    # timeout only buys patience while it is being starved.
+    #
+    # 500m rather than the observed 995m because that load is a crawler
+    # anomaly, not steady state, and 2 x 1000m would not fit a node here.
+    # Revisit once javadoc is no longer served through the ingress.
     resources:
       requests:
-        cpu: "250m"
-        memory: "150Mi"
+        cpu: "500m"
+        memory: "256Mi"
