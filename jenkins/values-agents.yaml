@@ -164,12 +164,28 @@ jenkins:
                           effect: "NoSchedule"
 
                   # For utility Kubernetes & GCloud
+                  #
+                  # THIS PIN HAS A SHELF LIFE. Google keeps only ~49 semver tags of
+                  # this image; everything older is pruned from the registry. The
+                  # previous pin (504.0.1) was not changed by anyone — it simply
+                  # aged out below the retention floor and started failing with
+                  # ErrImagePull / "not found", which surfaced as the nightly
+                  # Valheim backup job being unable to start an agent.
+                  #
+                  # So when this fails to pull, suspect retention BEFORE suspecting
+                  # a registry migration or broken credentials. Check the floor with:
+                  #   curl -s https://gcr.io/v2/google.com/cloudsdktool/google-cloud-cli/tags/list
+                  # and bump to a current release. `stable` would avoid this failure
+                  # class entirely, at the cost of the image changing underneath us.
+                  #
+                  # Keep the UNSUFFIXED variant: `-slim` ships gcloud core without
+                  # the extra components, and this agent's whole purpose is kubectl.
                   - name: "gcloud-cli"
                     label: "gcloud kubectl"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                     - name: utility
-                      image: "gcr.io/google.com/cloudsdktool/google-cloud-cli:504.0.1"
+                      image: "gcr.io/google.com/cloudsdktool/google-cloud-cli:583.0.0"
                       command: "sleep"
                       args: "infinity"
                       resourceRequestCpu: "125m"
