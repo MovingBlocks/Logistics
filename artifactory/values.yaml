@@ -75,11 +75,50 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
           xmx: "5g"
         persistence:
           size: 100Gi # Main filestore goes here, default was only 20 Gi
-      # access and router ship failureThreshold 30 (~155s and ~160s) while the other four
-      # containers get 90 (~480s). A cold boot after a node roll exceeds 155s, so access is
-      # killed mid-start; the router requires jfac in its topology and follows it down, and
-      # the pod can never converge. Raised to 90 to match its siblings. Blocks below are the
-      # chart defaults verbatim with only failureThreshold changed.
+        # Same 25-minute budget as its siblings below, and for the same reason —
+        # this is the 5g-heap JVM, so it is the slowest of the seven to boot on a
+        # CPU-starved node. Upstream default block with only failureThreshold
+        # changed.
+        startupProbe:
+          config: |
+            httpGet:
+              path: /artifactory/api/v1/system/readiness
+              port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
+            initialDelaySeconds: 10
+            failureThreshold: 300
+            periodSeconds: 5
+      # ── Startup budgets, sized for THIS hardware ──
+      #
+      # Every startupProbe below is the upstream default block with only
+      # failureThreshold changed to 300 (300 x 5s = 25 minutes).
+      #
+      # That is deliberately enormous, and it is not papering over a hang. These
+      # are e2-highmem-2 nodes: 2 vCPU, 1930m allocatable, and the cluster sits
+      # near 94% CPU requests. Artifactory is SEVEN containers in one Pod — a Pod
+      # is the unit of scheduling, so they cannot be spread — six of them
+      # BestEffort, all booting JVMs at once beside a 5g-heap main process. The
+      # node measured 103% CPU during the 107.161.20 cutover.
+      #
+      # At 90 (~7.5min) the cutover deadlocked, and the mechanism is worth
+      # keeping in mind because it is self-reinforcing:
+      #
+      #   access boots slowly under CPU starvation
+      #     -> its startupProbe budget expires and WE kill it
+      #     -> metadata's internal 2m join-key wait expires, it exits
+      #     -> router's liveness (5 x 10s) kills it since jfac never answers
+      #     -> each restart burns more CPU on JVM startup
+      #     -> access boots even slower
+      #
+      # Nothing there converges. The containers were being killed just short of
+      # finishing, and the restarts were the thing preventing them finishing.
+      #
+      # A startupProbe budget is a bound on how long boot may take, NOT a
+      # liveness guarantee — liveness probes stay at their defaults and take over
+      # once startup succeeds, so a genuinely hung process is still restarted.
+      # Spending the budget generously here costs nothing when boot is healthy.
+      #
+      # The real fix is more CPU per node; revisit these once that lands, because
+      # a 25-minute boot budget is a symptom worth being able to lower again.
       #
       # ⚠ RE-COPY THESE FROM THE CHART ON EVERY BUMP. They are pasted upstream
       # defaults, and upstream changes them: the router probe below was an `exec`
@@ -95,9 +134,8 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
                 - -c
                 - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:8040/access/api/v1/system/readiness
             initialDelaySeconds: 5
-            failureThreshold: 90
+            failureThreshold: 300
             periodSeconds: 5
-            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       router:
         startupProbe:
           config: |
@@ -108,7 +146,47 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
             timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
             initialDelaySeconds: 10
             periodSeconds: 5
-            failureThreshold: 90
+            failureThreshold: 300
+      metadata:
+        startupProbe:
+          config: |
+            httpGet:
+              path: /api/v1/system/readiness
+              port: {{ .Values.metadata.internalPort }}
+            initialDelaySeconds: 30
+            failureThreshold: 300
+            periodSeconds: 5
+      topology:
+        startupProbe:
+          config: |
+            httpGet:
+              path: /topology/api/v1/system/readiness
+              port: {{ .Values.topology.internalPort }}
+              scheme: HTTP
+            initialDelaySeconds: 3
+            failureThreshold: 300
+            periodSeconds: 5
+      jfconfig:
+        startupProbe:
+          config: |
+            httpGet:
+              path: /jfconfig/api/v1/system/readiness
+              port: {{ .Values.jfconfig.internalPort }}
+              scheme: HTTP
+            initialDelaySeconds: 3
+            failureThreshold: 300
+            periodSeconds: 5
+      observability:
+        startupProbe:
+          config: |
+            exec:
+              command:
+                - sh
+                - -c
+                - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+            initialDelaySeconds: 30
+            failureThreshold: 300
+            periodSeconds: 5
       event:
         enabled: false
       integration:
