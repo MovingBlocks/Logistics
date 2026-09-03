@@ -75,17 +75,30 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
           xmx: "5g"
         persistence:
           size: 100Gi # Main filestore goes here, default was only 20 Gi
-        # Same 25-minute budget as its siblings below, and for the same reason —
-        # this is the 5g-heap JVM, so it is the slowest of the seven to boot on a
-        # CPU-starved node. Upstream default block with only failureThreshold
-        # changed.
+        # 60 MINUTES for this one — double its siblings' 25. It is the 5g-heap
+        # JVM and by a wide margin the slowest of the seven to boot here.
+        #
+        # Measured rather than guessed. On the 107.161.20 cutover it used the
+        # full 25-minute budget, was killed, and at the moment of measurement was
+        # drawing 423m CPU — about 22% of the node's 2 vCPU on its own, more than
+        # the other six containers combined. It was working, not hung.
+        #
+        # And specifically NOT waiting on data-store work: every Artifactory
+        # connection in pg_stat_activity was `idle`, with no DDL and no
+        # migrations. The 7.98.9 -> 7.161.20 jump does not appear to convert
+        # anything at startup, so this is plain JVM/Spring initialisation being
+        # starved of CPU, not one-time upgrade cost that would disappear later.
+        #
+        # Which means the number does not come down on its own once the upgrade
+        # settles — only more CPU per node fixes it. Revisit with the node
+        # upgrade, not before.
         startupProbe:
           config: |
             httpGet:
               path: /artifactory/api/v1/system/readiness
               port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
             initialDelaySeconds: 10
-            failureThreshold: 300
+            failureThreshold: 720
             periodSeconds: 5
       # ── Startup budgets, sized for THIS hardware ──
       #
