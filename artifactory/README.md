@@ -147,6 +147,35 @@ grep -rh -A2 secretKeyRef /tmp/r --include='*statefulset*' --include='*deploymen
 
 Then account for every pair. A clean render is not evidence.
 
+### The shared cluster's pgBouncer requires TLS — and psql hides that
+
+The JDBC URL must carry `?sslmode=require`. That pgBouncer runs with
+`client_tls_sslmode = require`, so a plaintext connection is refused outright:
+
+```
+FATAL: SSL required (SQLSTATE 08P01)
+```
+
+Every JDBC-based service — metadata, access, artifactory, topology, jfconfig —
+then retries 120 times and exits, and the pod restart-loops.
+
+The trap is in how this gets tested. A `psql` login through the very same
+endpoint **succeeds without any sslmode set**, because libpq defaults to
+`sslmode=prefer` and quietly negotiates TLS. The PostgreSQL JDBC driver does
+not. So a green psql check proves the credentials, the route and the database —
+and proves nothing whatsoever about how the application connects. During this
+migration exactly that check was used as evidence, and it passed while the app
+could not connect at all.
+
+**Verify with the client the application actually uses**, or at minimum force
+`sslmode=disable` in a psql check to confirm what the server demands rather than
+letting the client paper over it.
+
+`require` rather than `verify-full`: the operator issues its own CA, so full
+verification would mean distributing that CA to every consumer for no real gain
+on an in-cluster hop. No client certificate is needed — pgBouncer requires TLS,
+not client auth.
+
 ### Two more things the new chart changes
 
 **Master and join keys are now mandatory.** 107.98.9 generated them itself and
