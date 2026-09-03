@@ -1,5 +1,55 @@
+# ── Mandatory keys (NEW as of the 107.161.x chart — it refuses to render without them) ──
+#
+# 107.98.9 generated these itself on first install and stored the master key on
+# the PVC at etc/security/master.key. The new chart makes both mandatory and
+# will not template at all if they are unset.
+#
+# ⚠ THE MASTER KEY MUST BE THE EXISTING ONE. It is what Artifactory's stored
+# configuration is encrypted with — repository credentials, proxy passwords,
+# signing keys. Handing it a freshly generated key does not fail loudly; it
+# comes up and cannot decrypt its own config. Pull the real one off the running
+# PVC before this merges — see the cutover runbook in README.md.
+#
+# Referenced by secret name rather than inlined, so neither key is committed.
+global:
+  masterKeySecretName: artifactory-mandatory-keys
+  joinKeySecretName: artifactory-mandatory-keys
+
 artifactory-oss: # This is needed because we end up parenting the "artifactory-oss" chart in our Chart.yaml
     artifactory: # Which in turn parents the "artifactory" chart
+
+      # ── Database: Mimir's shared PostgreSQL, not the bundled one ──
+      #
+      # The bundled chart is off. See README.md for the full reasoning; the
+      # short version is that every currently-supported Artifactory release
+      # bundles PostgreSQL 16 or 17 against the 15.6 that was running here, and
+      # the container will not start on a PGDATA directory from an older major.
+      # A dump/restore was forced either way, so it went somewhere better: the
+      # shared cluster is also PostgreSQL 15 (same-major, no upgrade) and gives
+      # this database pgBackRest coverage — transaction-consistent with WAL —
+      # in place of a crash-consistent Velero disk snapshot.
+      postgresql:
+        enabled: false
+      database:
+        type: postgresql
+        driver: org.postgresql.Driver
+        # Points at the shared cluster's pgBouncer, which is the endpoint the
+        # DataService publishes. Not a secret, so it stays here in plain sight
+        # rather than being read from the Secret — only the credentials come
+        # from there.
+        url: "jdbc:postgresql://mimir-postgres-pgbouncer.mimir.svc.cluster.local:5432/artifactory"
+        # Credentials come from the Secret the DataService vends, so there is no
+        # password in this repo any more. This is exactly the "getting secrets
+        # from existing k8s secrets" the README used to say the chart could not
+        # do — it can, via database.secrets, it just is not the default path.
+        secrets:
+          user:
+            name: artifactory-db-dataservice
+            key: username
+          password:
+            name: artifactory-db-dataservice
+            key: password
+
       artifactory: # Which in turn has an "artifactory" section. Yay.
         resources:
           requests:
@@ -22,6 +72,12 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
       # killed mid-start; the router requires jfac in its topology and follows it down, and
       # the pod can never converge. Raised to 90 to match its siblings. Blocks below are the
       # chart defaults verbatim with only failureThreshold changed.
+      #
+      # ⚠ RE-COPY THESE FROM THE CHART ON EVERY BUMP. They are pasted upstream
+      # defaults, and upstream changes them: the router probe below was an `exec`
+      # curl through 107.98.9 and is an `httpGet` as of 107.161.20. Carrying the
+      # old block forward would have pinned a stale probe shape — and a probe that
+      # still passes while testing the wrong thing is not a failure you notice.
       access:
         startupProbe:
           config: |
@@ -37,28 +93,14 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
       router:
         startupProbe:
           config: |
-            exec:
-              command:
-                - sh
-                - -c
-                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
-            initialDelaySeconds: 10
-            failureThreshold: 90
-            periodSeconds: 5
+            httpGet:
+              path: /router/api/v1/system/readiness
+              port: {{ .Values.router.externalPort }}
+              scheme: {{ include "artifactory.scheme" . | upper }}
             timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      postgresql:
-        persistence:
-          size: 20Gi # Default was a bizzare 200 Gi
-        resources:  # Add the 'resources' section here
-          requests:
-            cpu: "50m"
-            memory: "250Mi"
-          limits:
-            cpu: "250m"
-            memory: "2Gi"
-        postgresqlPassword: artifactoryDBpass1! # Been oddly awkward trying to hide this but the DB is internal anyway so ... maybe look at Backstage app config for a secrets-based option?
-          # TODO: There is actually also the "postgresql-postgres-password" which I guess is the admin account's password, which may still cycle? Eep. `NQjjpSb5N` might have been it at some point ..
-          # TODO: Needs to be moved to a secrets manager and rotated. Not a big danger, Postgres is not exposed  .. see also https://github.com/jfrog/charts/issues/859
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 90
       event:
         enabled: false
       integration:
@@ -79,10 +121,9 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
           #cert-manager.io/cluster-issuer: letsencrypt-staging
           cert-manager.io/cluster-issuer: letsencrypt-prod
           kubernetes.io/tls-acme: "true"
-          nginx.ingress.kubernetes.io/proxy-body-size: "0"
           nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
           nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-          nginx.ingress.kubernetes.io/proxy-body-size: "0"
+          nginx.ingress.kubernetes.io/proxy-body-size: "0" # Was listed twice; YAML keeps the last, so this is the one that ever applied.
           nginx.ingress.kubernetes.io/rewrite-target: "/"
           nginx.ingress.kubernetes.io/configuration-snippet: |
             rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
