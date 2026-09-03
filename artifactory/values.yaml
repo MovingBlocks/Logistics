@@ -33,16 +33,24 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
       database:
         type: postgresql
         driver: org.postgresql.Driver
-        # Points at the shared cluster's pgBouncer, which is the endpoint the
-        # DataService publishes. Not a secret, so it stays here in plain sight
-        # rather than being read from the Secret — only the credentials come
-        # from there.
-        url: "jdbc:postgresql://mimir-postgres-pgbouncer.mimir.svc.cluster.local:5432/artifactory"
+        # ⚠ ALL THREE must come from secrets, or none of them. `database.url` as
+        # a plain value looks correct and templates cleanly, but the chart only
+        # writes `db-url` into its unified secret when `database.secrets` is
+        # entirely empty — while the StatefulSet references `db-url` regardless.
+        # Setting just user/password here (to keep the password out of Git) left
+        # every container dying on:
+        #     Error: couldn't find key db-url in Secret ...-unified-secret
+        # so the URL moved into its own Secret, templated in
+        # templates/db-url-secret.yaml, which explains the trap in full.
+        #
         # Credentials come from the Secret the DataService vends, so there is no
-        # password in this repo any more. This is exactly the "getting secrets
-        # from existing k8s secrets" the README used to say the chart could not
-        # do — it can, via database.secrets, it just is not the default path.
+        # password in this repo. This is exactly the "getting secrets from
+        # existing k8s secrets" the README used to say the chart could not do —
+        # it can, via database.secrets, it just is not the default path.
         secrets:
+          url:
+            name: artifactory-db-url
+            key: db-url
           user:
             name: artifactory-db-dataservice
             key: username
