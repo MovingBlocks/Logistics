@@ -1,0 +1,38 @@
+# Artifactory's database, vended out of Mimir's SHARED PostgreSQL cluster
+# instead of the one the JFrog chart bundles.
+#
+# Why this exists at all: every currently-supported Artifactory release ships a
+# chart whose bundled PostgreSQL is 16.x or 17.x, while this install has been
+# running 15.6. Bitnami's image will not start on a PGDATA directory initialised
+# by an older major, so *any* upgrade forces a database migration. Given that,
+# moving to the shared cluster costs no more than upgrading the bundled one, and
+# is strictly better afterwards:
+#
+#   - The shared cluster is also PostgreSQL 15, so this is a same-major
+#     dump/restore rather than a major-version upgrade.
+#   - The database inherits pgBackRest repo1 (local) + repo2 (GCS) backups,
+#     which are transaction-consistent with WAL for point-in-time recovery.
+#     The bundled database had only Velero's crash-consistent disk snapshot,
+#     taken two seconds apart from the filestore snapshot and not mutually
+#     consistent with it — the shape that yields "artifact is in the database
+#     but missing from the filestore".
+#   - It removes the 20Gi bundled-Postgres PVC and the plaintext password that
+#     the README below has an apologetic paragraph about.
+#
+# ⚠ engine, placement and databaseName are IMMUTABLE after creation. They name a
+# database that holds data, so editing one re-points this object at a different
+# database and abandons the first rather than moving anything.
+#
+# databaseName is pinned to `artifactory` rather than left to derive from
+# namespace+name, because the restore target has to be a name known in advance —
+# see the cutover runbook in README.md.
+apiVersion: mimir.siliconsaga.org/v1alpha1
+kind: DataService
+metadata:
+  name: artifactory-db
+  labels:
+    app: artifactory
+spec:
+  engine: postgres
+  placement: shared
+  databaseName: artifactory
