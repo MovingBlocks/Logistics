@@ -74,3 +74,143 @@ Oh hey here we are again already anyway. But luckily this time the updated versi
 ### Known issues
 
 An apparent bug causes a regular error prompt about federation. It doesn't appear to cause any trouble and will be fixed in an upcoming release. See https://stackoverflow.com/questions/79192477/artifactory-cpp-ce-unsupported-operation-federated-after-upgrade-to-latest
+
+## Artifactory migration 2026 — 7.98.9 to 7.161.20, and the database moves out
+
+### Why this is not a version bump
+
+Time to move off 7.98.9 and onto a currently-supported release. Check
+[JFrog's security advisories](https://jfrog.com/help/r/jfrog-security-advisories)
+for the specifics that motivated the timing.
+
+The catch: **there is no newer version that is only a tag change.** Every
+currently-supported branch — 7.111.x, 7.117.x, 7.125.x, 7.133.x, 7.146.x,
+7.161.x — ships a chart that differs from 107.98.9 in two breaking ways.
+
+1. **The bundled PostgreSQL jumps a major version.** This install runs 15.6. The
+   lowest patched chart bundles 16.6; the latest bundles 17.10, and the image
+   itself moved from `bitnami/postgresql` to `echohq/postgres` in Bitnami's
+   registry exodus. The container refuses to start on a PGDATA directory
+   initialised by an older major, so a dump/restore is unavoidable either way.
+2. **The values schema changed.** `postgresqlPassword` / `postgresqlUsername` /
+   `postgresqlDatabase` became `auth.*`, and `persistence` / `resources` moved
+   under `primary`. Every override in the old `values.yaml` sat at a path the new
+   chart does not read, so they would be **silently ignored** — including the
+   database password. That failure looks like a healthy sync followed by an
+   Artifactory that cannot reach its own database.
+
+Since a database migration is forced regardless, the database moves to Mimir's
+shared PostgreSQL cluster rather than into a newer bundled one. That cluster is
+also PostgreSQL 15, so this becomes a **same-major dump/restore** with no
+version upgrade at all — and afterwards the database is covered by pgBackRest
+(repo1 local, repo2 in GCS) instead of a crash-consistent Velero disk snapshot.
+
+Artifactory 7.161 supports PostgreSQL 13–17, so 15 stays supported.
+
+### Also re-check the probe overrides when bumping
+
+The `access` and `router` `startupProbe.config` blocks in `values.yaml` are
+copies of upstream defaults with only `failureThreshold` raised to 90. Upstream
+has since **changed the router probe from an `exec` curl to an `httpGet`**, so
+carrying the old block forward would pin a stale probe shape onto a much newer
+router image. Re-copy both blocks from the new chart and re-apply only the
+`failureThreshold` change. The `access` block is otherwise unchanged.
+
+### Two more things the new chart changes
+
+**Master and join keys are now mandatory.** 107.98.9 generated them itself and
+kept the master key on the PVC. The new chart refuses to template without both,
+and — this is the dangerous part — **the master key must be the existing one**.
+It is what Artifactory's stored configuration is encrypted with: repository
+credentials, proxy passwords, signing keys. Given a fresh random key it does not
+fail loudly; it starts and cannot decrypt its own config. Step 3a below pulls the
+real key off the running instance.
+
+**Frontend and JFBus are now independent Deployments**, not containers in the
+StatefulSet. Two new pods, and upstream ships their main containers with
+`resources: {}` — BestEffort. This repo already learned that BestEffort plus a
+health probe is a restart loop under contention, and the cluster is currently
+tight on CPU requests. Left as upstream ships it rather than guessing numbers;
+size them from observation once they have run for a day, the same way the
+`artifactory` container's requests were derived.
+
+### Cutover runbook
+
+Deliberately split across two merges. The `DataService` is additive and safe to
+land at any time; the chart bump is what actually re-points Artifactory, so it
+must not sync until the data is already in place. ArgoCD auto-syncs, which means
+**merging step 4 is the cutover**, not a preparation for it.
+
+1. **Merge the `DataService`** (this PR). It provisions an empty `artifactory`
+   database in the shared cluster plus a Secret named
+   `artifactory-db-dataservice` carrying `host`, `port`, `database`, `username`,
+   `password` and `uri`. Nothing about the running Artifactory changes.
+
+   ```bash
+   kubectl get dataservice artifactory-db -n artifactory
+   # PHASE must be Ready before going further.
+   ```
+
+2. **Quiesce Artifactory.** The dump has to be of a database nobody is writing to;
+   a hot dump plus a later flip means every write in between is lost silently.
+
+   ```bash
+   kubectl scale statefulset terartifactory-artifactory -n artifactory --replicas=0
+   ```
+
+3. **Dump and restore.** `--no-owner` matters: the dump's objects are owned by the
+   old `artifactory` role, which does not exist in the shared cluster. Without it
+   the restore fails partway and leaves a half-populated database that still
+   looks present.
+
+   ```bash
+   kubectl exec -n artifactory terartifactory-artifactory-postgresql-0 -- \
+     pg_dump -U artifactory -d artifactory --no-owner --no-acl -Fc > /tmp/artifactory.dump
+
+   # Credentials for the target come from the vended Secret, not from anywhere
+   # in this repo — that is the point of moving.
+   kubectl get secret artifactory-db-dataservice -n artifactory \
+     -o jsonpath='{.data.password}' | base64 --decode
+   ```
+
+   Restore it through the shared cluster's pgBouncer
+   (`mimir-postgres-pgbouncer.mimir.svc.cluster.local:5432`, database
+   `artifactory`) as the vended user, then confirm the row counts survived rather
+   than trusting a clean exit code.
+
+3a. **Capture the existing master key and create the keys Secret.** Do this
+   while the pod is still scaled down but *before* merging the bump — the new
+   chart will not render without it, and a wrong key is worse than a missing one.
+
+   ```bash
+   # Off the PVC, from the running instance (scale back to 1 briefly if needed):
+   kubectl exec -n artifactory terartifactory-artifactory-0 -c artifactory -- \
+     cat /var/opt/jfrog/artifactory/etc/security/master.key
+
+   # The join key is in the UI: Administration -> Security -> General ->
+   # Connection Details. If nothing depends on it (no federation, no Xray, no
+   # second node), a fresh one is fine — unlike the master key.
+
+   kubectl create secret generic artifactory-mandatory-keys -n artifactory \
+     --from-literal=master-key="${MASTER_KEY}" \
+     --from-literal=join-key="${JOIN_KEY}"
+   ```
+
+   The Secret is created by hand rather than templated so neither key is ever
+   committed to this repo.
+
+4. **Merge the chart bump.** Sets `postgresql.enabled: false`, points
+   `database.url` at the shared cluster and sources credentials from the vended
+   Secret. ArgoCD syncs and Artifactory comes back on the new database.
+
+5. **Verify, then reclaim.** Once Artifactory is healthy and serving artifacts,
+   the old 20Gi `data-terartifactory-artifactory-postgresql-0` PVC can go. Leave
+   it until you are sure — it is the only rollback that does not involve a
+   restore.
+
+### Rollback
+
+Before step 2, revert the merge. After step 3, the old bundled database is still
+intact and untouched — reverting the chart bump points Artifactory back at it,
+losing only writes made since the dump. That is why step 5 waits.
+
