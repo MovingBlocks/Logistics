@@ -4,5 +4,8 @@ version: 1.0.0
 
 dependencies:
   - name: artifactory-oss
-    version: 107.98.9 # App version 7.98.9 when this was chosen
+    # App version 7.161.20, a currently-supported branch. 7.98.9 is well past
+    # support and receives no fixes, so there was no smaller bump available —
+    # see README.md for why this also forced the database off the bundled chart.
+    version: 107.161.20
     repository: https://charts.jfrog.io
