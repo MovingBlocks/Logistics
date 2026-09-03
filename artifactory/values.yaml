@@ -200,6 +200,53 @@ artifactory-oss: # This is needed because we end up parenting the "artifactory-o
             initialDelaySeconds: 30
             failureThreshold: 300
             periodSeconds: 5
+      # ── The two SPLIT-OUT Deployments need budgets too ──
+      #
+      # frontend and jfbus are not containers in the StatefulSet; 107.161.20
+      # moved them into their own Deployments. The first pass at startup budgets
+      # raised only the seven StatefulSet containers and missed these entirely,
+      # so while the main pod reached 7/7 and served the API, both of these sat
+      # in CrashLoopBackOff — 35 and 47 restarts respectively.
+      #
+      # Their upstream defaults are wildly optimistic for this hardware:
+      #
+      #   frontend  failureThreshold 90  ->  7.5 minutes
+      #   jfbus     failureThreshold 12  ->  60 SECONDS
+      #
+      # Sixty seconds, on a cluster where the JVMs beside them take tens of
+      # minutes. Their logs show them starting cleanly — frontend gets as far as
+      # registering all its proxy routes — and simply being killed mid-startup.
+      #
+      # ⚠ frontend serves the WEB UI. Artifactory can look healthy from the API
+      # side (router answers, api/system/ping returns OK, Gradle/Maven clients
+      # resolve) while the UI is entirely down, because the StatefulSet's
+      # readiness says nothing about these two. Do not read "7/7 Running" as
+      # "Artifactory is fine".
+      #
+      # Raised to 300 to match their siblings. Blocks are the upstream defaults
+      # verbatim with only failureThreshold changed — re-copy on every bump.
+      frontend:
+        startupProbe:
+          config: |
+            httpGet:
+              path: /api/v1/system/readiness
+              port: {{ .Values.frontend.internalPort }}
+            initialDelaySeconds: 30
+            failureThreshold: 300
+            periodSeconds: 5
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      jfbus:
+        startupProbe:
+          config: |
+            httpGet:
+              path: /{{ .Values.jfbus.apiContext }}/system/health/readiness
+              port: {{ .Values.jfbus.internalRestPort }}
+              scheme: HTTP
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 300
+            successThreshold: 1
       event:
         enabled: false
       integration:
