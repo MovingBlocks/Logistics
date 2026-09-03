@@ -116,6 +116,37 @@ carrying the old block forward would pin a stale probe shape onto a much newer
 router image. Re-copy both blocks from the new chart and re-apply only the
 `failureThreshold` change. The `access` block is otherwise unchanged.
 
+### The database wiring is all-or-nothing — verify the render, don't trust it
+
+This one caused a real outage during the cutover, so it is worth stating flatly.
+
+The chart writes `db-url` into its unified secret **only when `database.secrets`
+is entirely empty**. Supplying `url` as a plain value while sourcing `user` and
+`password` from a Secret — the obvious arrangement, since the URL is not
+sensitive and the password must not be in Git — silently skips that block, while
+the StatefulSet references `db-url` regardless. Result:
+
+```
+Error: couldn't find key db-url in Secret ...-unified-secret
+```
+
+Every container in the pod fails to start, with `CreateContainerConfigError`.
+So: url, user **and** password all via `database.secrets`, or all three as plain
+values. The URL therefore lives in its own Secret, templated in
+`templates/db-url-secret.yaml`.
+
+**`helm template` will not catch this.** It renders cleanly — a dangling
+`secretKeyRef` is perfectly valid YAML. The check that catches it is comparing
+every rendered `secretKeyRef` name/key pair against the keys the rendered (and
+pre-existing) Secrets actually provide:
+
+```bash
+helm template <release> . --output-dir /tmp/r
+grep -rh -A2 secretKeyRef /tmp/r --include='*statefulset*' --include='*deployment*'
+```
+
+Then account for every pair. A clean render is not evidence.
+
 ### Two more things the new chart changes
 
 **Master and join keys are now mandatory.** 107.98.9 generated them itself and
@@ -138,8 +169,21 @@ size them from observation once they have run for a day, the same way the
 
 Deliberately split across two merges. The `DataService` is additive and safe to
 land at any time; the chart bump is what actually re-points Artifactory, so it
-must not sync until the data is already in place. ArgoCD auto-syncs, which means
-**merging step 4 is the cutover**, not a preparation for it.
+must not be synced until the data is already in place.
+
+**This app is on the legacy ArgoCD in the `argocd` namespace, and it does NOT
+auto-sync** — its `syncPolicy` has no `automated` block, so a merge only makes it
+`OutOfSync` and waits. The cutover is therefore the *manual sync*, not the merge.
+That is a safety margin, not a licence to be casual: sync at a moment you have
+chosen, with the data already restored.
+
+A **selective sync** is worth preferring. `Secret/terartifactory-artifactory-postgresql`
+carries long-standing drift — `postgresql-password` is hardwired in values but
+`postgresql-postgres-password` is auto-generated and cycles — so a blanket sync
+rewrites a credential that has nothing to do with this migration. It is annotated
+`argocd.argoproj.io/sync-options: Prune=false` so that a later prune cannot take
+it: that Secret holds the only copy of the old database's superuser password, and
+losing it would leave a rollback you cannot administer.
 
 1. **Merge the `DataService`** (this PR). It provisions an empty `artifactory`
    database in the shared cluster plus a Secret named
@@ -182,18 +226,35 @@ must not sync until the data is already in place. ArgoCD auto-syncs, which means
    while the pod is still scaled down but *before* merging the bump — the new
    chart will not render without it, and a wrong key is worse than a missing one.
 
-   ```bash
-   # Off the PVC, from the running instance (scale back to 1 briefly if needed):
-   kubectl exec -n artifactory terartifactory-artifactory-0 -c artifactory -- \
-     cat /var/opt/jfrog/artifactory/etc/security/master.key
+   ⚠️ **Do not copy `join.key` off the PVC.** It begins with `JE`, JFrog's
+   *encrypted-value* prefix — it is the join key encrypted with the master key,
+   not the join key. Putting that blob in the Secret injects ciphertext where
+   plaintext is expected, and it fails at service registration, long after the
+   sync looks successful. Take the join key from the UI (Administration →
+   Security → General → Connection Details), or generate a fresh one: with a
+   single node, OSS (no Xray), and `event`/`integration` disabled, nothing is
+   joined to this instance and all the platform services pick up the new value
+   together. The **master key** has no such freedom — it must be the existing one.
 
-   # The join key is in the UI: Administration -> Security -> General ->
-   # Connection Details. If nothing depends on it (no federation, no Xray, no
-   # second node), a fresh one is fine — unlike the master key.
+   Copy rather than echo, so no key material lands in a shell history:
+
+   ```bash
+   kubectl cp -c artifactory \
+     artifactory/terartifactory-artifactory-0:/var/opt/jfrog/artifactory/etc/security/master.key \
+     ./master-key
+
+   # Fresh join key. `openssl rand -hex` appends a newline, which --from-file
+   # would store verbatim inside the key; dd trims it back to exactly 64 bytes.
+   openssl rand -hex 32 -out ./join-key.raw
+   dd if=./join-key.raw of=./join-key bs=1 count=64 status=none
 
    kubectl create secret generic artifactory-mandatory-keys -n artifactory \
-     --from-literal=master-key="${MASTER_KEY}" \
-     --from-literal=join-key="${JOIN_KEY}"
+     --from-file=master-key=./master-key \
+     --from-file=join-key=./join-key
+
+   # Both entries must read as exactly 64 bytes; anything larger means a stray newline.
+   kubectl describe secret artifactory-mandatory-keys -n artifactory
+   rm -f ./master-key ./join-key ./join-key.raw
    ```
 
    The Secret is created by hand rather than templated so neither key is ever
