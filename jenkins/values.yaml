@@ -13,6 +13,11 @@ jenkins:
     image:
       repository: "jenkins/jenkins"
       tag: "2.479.2-lts"
+    # Appended by the chart to its own JAVA_OPTS, so this is the entry that reaches the
+    # JVM. Without a heap setting Java 17 takes 25% of the 8Gi limit, a 2Gi heap that
+    # sat at 74% used on a quiet day and thrashes when several agents publish results
+    # at once (the "wave knocks Jenkins over" shape). 50% is a 4Gi heap.
+    javaOpts: "-XX:MaxRAMPercentage=50"
     # Member of the "frontline" spread group — see docs/spread-groups.md.
     # Keeps the controller off the nodes running the ingress replicas: a build
     # spike here used to starve the ingress they shared, which read on the
@@ -46,7 +51,8 @@ jenkins:
     resources:
       requests:
         cpu: "250m"
-        memory: "4Gi"
+        # 4Gi heap + metaspace + off-heap lands near 6Gi; reserve what it will use.
+        memory: "6Gi"
       limits:
         cpu: "2000m"
         memory: "8Gi"
@@ -123,6 +129,10 @@ jenkins:
             name: jenkins-secrets
             key: github-client-secret
       # The casc piece came by default, other is required to enable https://plugins.jenkins.io/permissive-script-security/
+      # NOTE: the chart emits its own JAVA_OPTS after containerEnv and the last entry
+      # wins, so this value never reaches the JVM (confirmed via jcmd VM.command_line,
+      # which explains the TECHNICAL.md puzzle). Deliberately left as-is: moving the
+      # permissive flag into controller.javaOpts would switch script security behaviour.
       - name: JAVA_OPTS
         value: "-Dcasc.reload.token=terajenkins-0 -Dpermissive-script-security.enabled=no_security"
     ingress:
