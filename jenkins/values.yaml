@@ -138,3 +138,11 @@ jenkins:
         cert-manager.io/cluster-issuer: "letsencrypt-prod"
         kubernetes.io/tls-acme: "true"
         kubernetes.io/ingress.class: nginx
+        # Javadoc is no longer hosted. A crawler swarm kept fetching it (Nov 2026),
+        # saturating Jenkins and liveness-killing both ingress controllers.
+        # First location: the /job/.../javadoc/ URLs on the jenkins host. Second: the
+        # resource-root form on the content host, where the path sits base64-encoded
+        # inside the token; the three alternatives are "/javadoc" at each alignment.
+        nginx.ingress.kubernetes.io/server-snippet: |
+          location ~ /javadoc(/|$) { return 410; }
+          location ~ ^/static-files/[^/]*(L2phdmFkb2M|9qYXZhZG9j|vamF2YWRvY) { return 410; }
