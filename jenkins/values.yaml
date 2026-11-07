@@ -143,6 +143,8 @@ jenkins:
         # First location: the /job/.../javadoc/ URLs on the jenkins host. Second: the
         # resource-root form on the content host, where the path sits base64-encoded
         # inside the token; the three alternatives are "/javadoc" at each alignment.
+        # access_log off: the swarm kept going after the 410, and its lines were
+        # ~200 GiB/month of Cloud Logging. Errors still reach stderr.
         nginx.ingress.kubernetes.io/server-snippet: |
-          location ~ /javadoc(/|$) { return 410; }
-          location ~ ^/static-files/[^/]*(L2phdmFkb2M|9qYXZhZG9j|vamF2YWRvY) { return 410; }
+          location ~ /javadoc(/|$) { access_log off; return 410; }
+          location ~ ^/static-files/[^/]*(L2phdmFkb2M|9qYXZhZG9j|vamF2YWRvY) { access_log off; return 410; }
